@@ -1,0 +1,44 @@
+{
+  "name": "electrontest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/main.ts",
+  "homepage": "./",
+  "build": {
+    "appId": "com.boskysoft",
+    "files": [
+      "src/main.ts",
+      "dist/**/*"
+    ],
+    "mac": {
+      "target": "dmg",
+      "icon": ""
+    },
+    "win": {
+      "target": "nsis",
+      "icon": ""
+    },
+    "linux": {
+      "target": "deb",
+      "icon": "",
+      "category": "Development"
+    }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config webpack.config.js",
+    "lint": "eslint",
+    "start": "npm run build && electron ./dist/main.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron-nightly": "^11.0.0-nightly.20200812",
+    "eslint": "^7.7.0",
+    "html-webpack-plugin": "^4.3.0",
+    "ts-loader": "^8.0.2",
+    "typescript": "^3.9.7",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12"
+  }
+}
