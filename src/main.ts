@@ -17,6 +17,11 @@ function createWindow() {
   win.webContents.openDevTools();
 }
 
+////////////////////////////////////////////////////
+// THIS IS THE BLEEDING EDGE RIGHT HERE
+////////////////////////////////////////////////////
+app.commandLine.appendSwitch("enable-unsafe-webgpu");
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.

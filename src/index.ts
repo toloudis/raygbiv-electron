@@ -1,4 +1,4 @@
-//import "@webgpu/types";
+import * as WEBGPU from "@webgpu/types";
 
 import { vec3 } from "gl-matrix";
 
