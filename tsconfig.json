@@ -1,15 +1,15 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "lib": ["ES2018", "DOM"],
     "noImplicitAny": true,
     "sourceMap": true,
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
       "*": ["node_modules/*"]
-    }
+    },
+    "typeRoots": ["node_modules/@webgpu/types"]
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*"]
 }

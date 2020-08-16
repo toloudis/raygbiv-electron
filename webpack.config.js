@@ -24,12 +24,24 @@ module.exports = [
     entry: "./src/index.ts",
     target: "electron-renderer",
     devtool: "source-map",
+    resolve: {
+      extensions: [".ts", ".tsx", ".js"],
+    },
     module: {
       rules: [
         {
           test: /\.ts(x?)$/,
           include: /src/,
           use: [{ loader: "ts-loader" }],
+          exclude: /node_modules/,
+        },
+        {
+          test: /\.spv$/i,
+          use: [
+            {
+              loader: "file-loader",
+            },
+          ],
         },
       ],
     },

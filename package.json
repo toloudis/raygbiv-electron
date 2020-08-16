@@ -28,17 +28,24 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --config webpack.config.js",
     "lint": "eslint",
-    "start": "npm run build && electron ./dist/main.js"
+    "start": "npm run build && electron ./dist/main.js",
+    "shaders": "node build-shaders.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@webgpu/glslang": "0.0.15",
+    "@webgpu/types": "0.0.31",
     "electron-nightly": "^11.0.0-nightly.20200812",
     "eslint": "^7.7.0",
+    "file-loader": "^6.0.0",
     "html-webpack-plugin": "^4.3.0",
     "ts-loader": "^8.0.2",
     "typescript": "^3.9.7",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12"
+  },
+  "dependencies": {
+    "gl-matrix": "^3.3.0"
   }
 }
