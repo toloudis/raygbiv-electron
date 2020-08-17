@@ -1,14 +1,13 @@
 {
-  "name": "electrontest",
+  "name": "raygbiv",
   "version": "1.0.0",
-  "description": "",
-  "main": "src/main.ts",
-  "homepage": "./",
+  "description": "WebGPU rendering app",
+  "main": "./dist/main.js",
   "build": {
-    "appId": "com.boskysoft",
+    "appId": "ray.g.biv",
     "files": [
-      "src/main.ts",
-      "dist/**/*"
+      "dist/**/*",
+      "package.json"
     ],
     "mac": {
       "target": "dmg",
@@ -29,13 +28,17 @@
     "build": "webpack --config webpack.config.js",
     "lint": "eslint",
     "start": "npm run build && electron ./dist/main.js",
-    "shaders": "node build-shaders.js"
+    "shaders": "node build-shaders.js",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "postinstall": "electron-builder install-app-deps"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@webgpu/glslang": "0.0.15",
     "@webgpu/types": "0.0.31",
+    "electron-builder": "^22.8.0",
     "electron-nightly": "^11.0.0-nightly.20200812",
     "eslint": "^7.7.0",
     "file-loader": "^6.0.0",

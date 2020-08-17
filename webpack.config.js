@@ -18,6 +18,9 @@ module.exports = [
       path: __dirname + "/dist",
       filename: "main.js",
     },
+    node: {
+      __dirname: false,
+    },
   },
   {
     mode: "development",
