@@ -194,8 +194,9 @@ export default class MyRenderer {
   createBuffer(arr: Float32Array | Uint16Array, usage: number): GPUBuffer {
     const desc = { size: arr.byteLength, usage, mappedAtCreation: true };
     console.log("CreateBuffer Mapped " + arr.byteLength);
-    const buffer = this.device.createBuffer(desc);
-    const bufferMapped = buffer.getMappedRange(0, arr.byteLength);
+    // @ts-ignore TS2339
+    const [buffer, bufferMapped] = this.device.createBufferMapped(desc);
+    //const bufferMapped = buffer.getMappedRange(0, arr.byteLength);
 
     const writeArray =
       arr instanceof Uint16Array
@@ -287,12 +288,13 @@ export default class MyRenderer {
       camera.getProjectionMatrix(),
       camera.getViewMatrix()
     );
-    const upload = this.device.createBuffer({
+    // @ts-ignore TS2339
+    const [upload, mapping] = this.device.createBufferMapped({
       size: 16 * 4,
       usage: GPUBufferUsage.COPY_SRC,
       mappedAtCreation: true,
     });
-    const mapping = upload.getMappedRange(0, 16 * 4);
+    //const mapping = upload.getMappedRange(0, 16 * 4);
 
     new Float32Array(mapping).set(projView);
     upload.unmap();

@@ -23,9 +23,10 @@ export default class Mesh {
         mappedAtCreation: true,
       };
       console.log("create mesh buffer " + arr.byteLength);
-      const buffer = device.createBuffer(desc);
+      // @ts-ignore TS2339
+      const [buffer, bufferMapped] = device.createBufferMapped(desc);
+      //const bufferMapped = buffer.getMappedRange(0, arr.byteLength);
 
-      const bufferMapped = buffer.getMappedRange(0, arr.byteLength);
       const writeArray =
         arr instanceof Uint16Array
           ? new Uint16Array(bufferMapped)
