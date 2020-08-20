@@ -1,6 +1,6 @@
 import * as WEBGPU from "@webgpu/types";
 
-import { vec3 } from "gl-matrix";
+import { vec3, mat4 } from "gl-matrix";
 
 import MyRenderer from "./renderer/renderer";
 import Camera from "./renderer/camera";
@@ -42,46 +42,6 @@ myRenderer.begin().then(() => {
 
   const shaderobj = myRenderer.triangleShader;
 
-  const uniformData = new Float32Array([
-    // ♟️ ModelViewProjection Matrix
-    1.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    1.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    1.0,
-    0.0,
-    0.0,
-    0.0,
-    0.0,
-    1.0,
-
-    // 🔴 Primary Color
-    0.9,
-    0.1,
-    0.3,
-    1.0,
-
-    // 🟣 Accent Color
-    0.8,
-    0.2,
-    0.8,
-    1.0,
-  ]);
-
-  // stick this data into a gpu buffer
-  const uniformBuffer: GPUBuffer = myRenderer.createBuffer(
-    uniformData,
-    GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-  );
-  // attach this buffer to the shader
-  const shaderuniformbindgroup = shaderobj.createShaderBindGroup(uniformBuffer);
-
   //uniformBuffer.setSubData(0, camera.getProjectionMatrix(), 0, )
 
   // Graphics Pipeline
@@ -90,12 +50,12 @@ myRenderer.begin().then(() => {
     shaderobj
   );
 
-  myRenderer.addSceneObject(
-    pipeline,
-    myMesh,
-    shaderuniformbindgroup,
-    uniformBuffer
-  );
+  const m1 = mat4.fromTranslation(mat4.create(), vec3.fromValues(1, 0, 1));
+  myRenderer.addSceneObject(pipeline, myMesh, shaderobj, m1);
+  const m2 = mat4.fromTranslation(mat4.create(), vec3.fromValues(-1, 0, -1));
+  myRenderer.addSceneObject(pipeline, myMesh, shaderobj, m2);
+  const m3 = mat4.fromTranslation(mat4.create(), vec3.fromValues(2, 0, 2));
+  myRenderer.addSceneObject(pipeline, myMesh, shaderobj, m3);
 
   // infinite render loop.
   function renderloop() {

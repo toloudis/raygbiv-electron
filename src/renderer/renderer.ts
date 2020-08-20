@@ -288,22 +288,31 @@ export default class MyRenderer {
       camera.getProjectionMatrix(),
       camera.getViewMatrix()
     );
-    // @ts-ignore TS2339
-    const [upload, mapping] = this.device.createBufferMapped({
-      size: 16 * 4,
-      usage: GPUBufferUsage.COPY_SRC,
-      mappedAtCreation: true,
-    });
-    //const mapping = upload.getMappedRange(0, 16 * 4);
 
-    new Float32Array(mapping).set(projView);
-    upload.unmap();
+    // gpu update all uniform buffers for all objects to update camera
+    for (let i = 0; i < this.scene.length; ++i) {
+      // apply the model transform
+      const projViewModel = mat4.mul(
+        projView,
+        projView,
+        this.scene[i].transform
+      );
+      // TODO don't create this every time?
+      // @ts-ignore TS2339
+      const [upload, mapping] = this.device.createBufferMapped({
+        size: 16 * 4,
+        usage: GPUBufferUsage.COPY_SRC,
+        mappedAtCreation: true,
+      });
+      //const mapping = upload.getMappedRange(0, 16 * 4);
 
-    if (this.scene.length > 0) {
+      new Float32Array(mapping).set(projView);
+      upload.unmap();
+
       this.commandEncoder.copyBufferToBuffer(
         upload,
         0,
-        this.scene[0].uniformBuffer,
+        this.scene[i].uniformBuffer,
         0,
         16 * 4
       );
@@ -311,8 +320,6 @@ export default class MyRenderer {
 
     // renderpassdesc describes the framebuffer we are rendering to
     this.passEncoder = this.commandEncoder.beginRenderPass(renderPassDesc);
-    this.passEncoder.setPipeline(this.scene[0].pipeline);
-    this.passEncoder.setBindGroup(0, this.scene[0].shaderuniformbindgroup);
     this.passEncoder.setViewport(
       0,
       0,
@@ -322,10 +329,18 @@ export default class MyRenderer {
       1
     );
     this.passEncoder.setScissorRect(0, 0, this.renderWidth, this.renderHeight);
-    this.passEncoder.setVertexBuffer(0, this.scene[0].mesh.getPositionBuffer());
-    this.passEncoder.setVertexBuffer(1, this.scene[0].mesh.getColorBuffer());
-    this.passEncoder.setIndexBuffer(this.scene[0].mesh.getIndexBuffer());
-    this.passEncoder.drawIndexed(3, 1, 0, 0, 0);
+
+    for (let i = 0; i < this.scene.length; ++i) {
+      this.passEncoder.setPipeline(this.scene[i].pipeline);
+      this.passEncoder.setBindGroup(0, this.scene[i].shaderuniformbindgroup);
+      this.passEncoder.setVertexBuffer(
+        0,
+        this.scene[i].mesh.getPositionBuffer()
+      );
+      this.passEncoder.setVertexBuffer(1, this.scene[i].mesh.getColorBuffer());
+      this.passEncoder.setIndexBuffer(this.scene[i].mesh.getIndexBuffer());
+      this.passEncoder.drawIndexed(3, 1, 0, 0, 0);
+    }
     this.passEncoder.endPass();
 
     this.queue.submit([this.commandEncoder.finish()]);
@@ -343,15 +358,57 @@ export default class MyRenderer {
   addSceneObject(
     pipeline: GPURenderPipeline,
     myMesh: Mesh,
-    shaderuniformbindgroup: GPUBindGroup,
-    uniformBuffer: GPUBuffer
+    shaderobj: Shader,
+    transform: mat4
   ): void {
+    const uniformData = new Float32Array([
+      // ♟️ ModelViewProjection Matrix
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+
+      // 🔴 Primary Color
+      0.9,
+      0.1,
+      0.3,
+      1.0,
+
+      // 🟣 Accent Color
+      0.8,
+      0.2,
+      0.8,
+      1.0,
+    ]);
+
+    // stick this data into a gpu buffer
+    const uniformBuffer: GPUBuffer = this.createBuffer(
+      uniformData,
+      GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    );
+    // attach this buffer to the shader
+    const shaderuniformbindgroup = shaderobj.createShaderBindGroup(
+      uniformBuffer
+    );
+
     this.scene.push({
       pipeline,
       mesh: myMesh,
       shaderuniformbindgroup,
       uniformBuffer,
-      transform: mat4.create(),
+      transform,
     });
   }
 }

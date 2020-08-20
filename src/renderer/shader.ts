@@ -7,7 +7,7 @@ export default class Shader {
   private uniformBindGroupLayout: GPUBindGroupLayout = null;
   private pipelineLayout: GPUPipelineLayout = null;
 
-  // 👋 Helper function for creating GPUShaderModule(s) out of SPIR-V files
+  // Helper function for creating GPUShaderModule(s) out of SPIR-V files
   private loadShader(shaderPath: string) {
     return fetch(new Request(shaderPath), {
       method: "GET",
@@ -22,8 +22,8 @@ export default class Shader {
 
   public async load(device: GPUDevice): Promise<void> {
     this.device = device;
-    // 🙏 inside an async function...
-    // ⚠️ Note: You could include these binaries as variables in your
+    // inside an async function...
+    // Note: You could include these binaries as variables in your
     // javascript source.
 
     const vsmDesc: GPUShaderModuleDescriptor = {
