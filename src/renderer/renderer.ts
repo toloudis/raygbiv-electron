@@ -293,7 +293,7 @@ export default class MyRenderer {
     for (let i = 0; i < this.scene.length; ++i) {
       // apply the model transform
       const projViewModel = mat4.mul(
-        projView,
+        mat4.create(),
         projView,
         this.scene[i].transform
       );
@@ -306,7 +306,7 @@ export default class MyRenderer {
       });
       //const mapping = upload.getMappedRange(0, 16 * 4);
 
-      new Float32Array(mapping).set(projView);
+      new Float32Array(mapping).set(projViewModel);
       upload.unmap();
 
       this.commandEncoder.copyBufferToBuffer(
