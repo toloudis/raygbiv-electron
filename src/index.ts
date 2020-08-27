@@ -51,11 +51,11 @@ myRenderer.begin().then(() => {
   );
 
   const m1 = mat4.fromTranslation(mat4.create(), vec3.fromValues(1, 0, 1));
-  myRenderer.addSceneObject(pipeline, myMesh, shaderobj, m1);
+  myRenderer.addSceneObject(myMesh, shaderobj, m1);
   const m2 = mat4.fromTranslation(mat4.create(), vec3.fromValues(-1, 0, -1));
-  myRenderer.addSceneObject(pipeline, myMesh, shaderobj, m2);
+  myRenderer.addSceneObject(myMesh, shaderobj, m2);
   const m3 = mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, 0));
-  myRenderer.addSceneObject(pipeline, myMesh, shaderobj, m3);
+  myRenderer.addSceneObject(myMesh, shaderobj, m3);
 
   // infinite render loop.
   function renderloop() {

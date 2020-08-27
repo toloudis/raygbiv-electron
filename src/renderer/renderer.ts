@@ -44,6 +44,8 @@ export default class MyRenderer {
   public triangleShader: Shader = null;
   private volumeShader: Shader = null;
 
+  private triangleShaderPipeline: GPURenderPipeline = null;
+
   constructor() {
     /* do nothing */
   }
@@ -186,6 +188,12 @@ export default class MyRenderer {
   async loadAllShaders(): Promise<void> {
     this.triangleShader = new Shader(triangle_vert_spv, triangle_frag_spv);
     await this.triangleShader.load(this.device);
+    // Graphics Pipeline
+
+    this.triangleShaderPipeline = this.createRenderPipeline(
+      this.triangleShader
+    );
+
     this.volumeShader = new Shader(volume_vert_spv, volume_frag_spv);
     await this.volumeShader.load(this.device);
   }
@@ -355,12 +363,7 @@ export default class MyRenderer {
     this.encodeCommands(camera);
   }
 
-  addSceneObject(
-    pipeline: GPURenderPipeline,
-    myMesh: Mesh,
-    shaderobj: Shader,
-    transform: mat4
-  ): void {
+  addSceneObject(myMesh: Mesh, shaderobj: Shader, transform: mat4): void {
     const uniformData = new Float32Array([
       // ♟️ ModelViewProjection Matrix
       1.0,
@@ -404,7 +407,7 @@ export default class MyRenderer {
     );
 
     this.scene.push({
-      pipeline,
+      pipeline: this.triangleShaderPipeline,
       mesh: myMesh,
       shaderuniformbindgroup,
       uniformBuffer,
