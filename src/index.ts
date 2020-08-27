@@ -3,28 +3,32 @@ import * as WEBGPU from "@webgpu/types";
 import { vec3, mat4 } from "gl-matrix";
 
 import MyRenderer from "./renderer/renderer";
+import Graphics from "./renderer/graphics";
 import Camera from "./renderer/camera";
 import CameraController from "./renderer/cameraController";
+import Scene from "./renderer/scene";
 
 const camera = new Camera();
+const scene = new Scene();
+
 // aim camera at scene
 camera.setPosition(vec3.fromValues(0, 0, 100));
 camera.setTarget(vec3.fromValues(0, 0, 0));
 camera.setUp(vec3.fromValues(0, 1, 0));
 
-const myRenderer = new MyRenderer();
+const graphics = new Graphics();
 
 const CANVAS_ID = "raygbiv";
 
 // initialize graphics here
-myRenderer.begin().then(() => {
-  // tell the graphics system that we will render to this canvas
-  myRenderer.initCanvas(CANVAS_ID);
-
-  // install camera controller
+graphics.init().then(() => {
   const canvas: HTMLCanvasElement = document.getElementById(
     CANVAS_ID
   ) as HTMLCanvasElement;
+  // tell the graphics system that we will render to this canvas
+  const renderTarget = graphics.createCanvasRenderTarget(canvas);
+
+  // install camera controller
   const controller = new CameraController(camera, canvas);
   camera.setProjection(
     canvas.width / canvas.height,
@@ -33,11 +37,11 @@ myRenderer.begin().then(() => {
     1000.0
   );
 
-  const myMesh = myRenderer.createMesh(
+  const myMesh = graphics.createMesh(
+    new Uint16Array([0, 1, 2]),
     new Float32Array([1.0, -1.0, 0.0, -1.0, -1.0, 0.0, 0.0, 1.0, 0.0]),
     null,
-    new Float32Array([1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]),
-    new Uint16Array([0, 1, 2])
+    new Float32Array([1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0])
   );
 
   const shaderobj = myRenderer.triangleShader;
@@ -51,16 +55,18 @@ myRenderer.begin().then(() => {
   );
 
   const m1 = mat4.fromTranslation(mat4.create(), vec3.fromValues(1, 0, 1));
-  myRenderer.addSceneObject(myMesh, shaderobj, m1);
+  scene.addSceneObject(myMesh, shaderobj, m1);
   const m2 = mat4.fromTranslation(mat4.create(), vec3.fromValues(-1, 0, -1));
-  myRenderer.addSceneObject(myMesh, shaderobj, m2);
+  scene.addSceneObject(myMesh, shaderobj, m2);
   const m3 = mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, 0));
-  myRenderer.addSceneObject(myMesh, shaderobj, m3);
+  scene.addSceneObject(myMesh, shaderobj, m3);
 
+  const sceneRenderer = graphics.createDefaultRenderer();
   // infinite render loop.
   function renderloop() {
+    renderTarget.swap();
     controller.update();
-    myRenderer.render(camera);
+    sceneRenderer.render(renderTarget, camera, scene, 0.0);
     requestAnimationFrame(renderloop);
   }
   requestAnimationFrame(renderloop);
