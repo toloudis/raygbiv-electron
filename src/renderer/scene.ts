@@ -7,21 +7,12 @@ import Shader from "./shader";
 class Scene {
   public objects: SceneObject[];
 
-  public addSceneObject(mesh: Mesh, shader: Shader, transform: mat4) {
-    // stick this data into a gpu buffer
-    const uniformBuffer: GPUBuffer = shader.createUniformBuffer();
+  constructor() {
+    this.objects = [];
+  }
 
-    // attach this buffer to the shader
-    const shaderuniformbindgroup = shader.createShaderBindGroup(uniformBuffer);
-
+  public addSceneObject(mesh: Mesh, transform: mat4) {
     this.objects.push(new SceneObject(mesh, transform));
-    // {
-    //   //pipeline: this.triangleShaderPipeline,
-    //   mesh: mesh,
-    //   //shaderuniformbindgroup,
-    //   //uniformBuffer,
-    //   transform: transform,
-    // });
   }
 }
 

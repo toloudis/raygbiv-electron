@@ -8,18 +8,13 @@ import SceneObject from "./sceneObject";
 import Shader from "./shader";
 import CanvasRenderTarget from "./canvasRenderTarget";
 
-// // consider using readFileSync here to skip the fetch step in shader.ts
-// import triangle_frag_spv from "./shaders/triangle.frag.spv";
-// import triangle_vert_spv from "./shaders/triangle.vert.spv";
-// import volume_frag_spv from "./shaders/volume.frag.spv";
-// import volume_vert_spv from "./shaders/volume.vert.spv";
+// consider using readFileSync here to skip the fetch step in shader.ts
+import triangle_frag_spv from "./shaders/triangle.frag.spv";
+import triangle_vert_spv from "./shaders/triangle.vert.spv";
 
-interface MySceneObject {
-  pipeline: GPURenderPipeline;
-  mesh: Mesh;
+interface MySceneObjectUniforms {
   shaderuniformbindgroup: GPUBindGroup;
   uniformBuffer: GPUBuffer;
-  transform: mat4;
 }
 
 export default class MyRenderer implements ISceneRenderer {
@@ -31,8 +26,25 @@ export default class MyRenderer implements ISceneRenderer {
   private commandEncoder: GPUCommandEncoder = null;
   private passEncoder: GPURenderPassEncoder = null;
 
+  private triangleShader: Shader = null;
+  private triangleShaderPipeline: GPURenderPipeline = null;
+
+  private gpuScene: Map<SceneObject, MySceneObjectUniforms>;
+
   constructor(device: GPUDevice) {
     this.device = device;
+
+    this.gpuScene = new Map<SceneObject, MySceneObjectUniforms>();
+  }
+
+  async initPostCtor(): Promise<void> {
+    this.triangleShader = new Shader(triangle_vert_spv, triangle_frag_spv);
+    await this.triangleShader.load(this.device);
+    // Graphics Pipeline
+
+    this.triangleShaderPipeline = this.createRenderPipeline(
+      this.triangleShader
+    );
   }
 
   createMesh(
@@ -165,6 +177,24 @@ export default class MyRenderer implements ISceneRenderer {
     // gpu update all uniform buffers for all objects to update camera
     for (let i = 0; i < scene.objects.length; ++i) {
       const object: SceneObject = scene.objects[i];
+
+      let shadingInfo: MySceneObjectUniforms = this.gpuScene.get(object);
+      if (!shadingInfo) {
+        // stick this data into a gpu buffer
+        const uniformBuffer: GPUBuffer = this.triangleShader.createUniformBuffer();
+
+        // attach this buffer to the shader
+        const shaderuniformbindgroup = this.triangleShader.createShaderBindGroup(
+          uniformBuffer
+        );
+
+        shadingInfo = {
+          uniformBuffer,
+          shaderuniformbindgroup,
+        };
+        this.gpuScene.set(object, shadingInfo);
+      }
+
       // apply the model transform
       const projViewModel = mat4.mul(mat4.create(), projView, object.transform);
       // TODO don't create this every time?
@@ -182,7 +212,7 @@ export default class MyRenderer implements ISceneRenderer {
       this.commandEncoder.copyBufferToBuffer(
         upload,
         0,
-        object.uniformBuffer,
+        shadingInfo.uniformBuffer,
         0,
         16 * 4
       );
@@ -207,9 +237,10 @@ export default class MyRenderer implements ISceneRenderer {
 
     for (let i = 0; i < scene.objects.length; ++i) {
       const object: SceneObject = scene.objects[i];
+      let shadingInfo: MySceneObjectUniforms = this.gpuScene.get(object);
 
-      this.passEncoder.setPipeline(object.pipeline);
-      this.passEncoder.setBindGroup(0, object.shaderuniformbindgroup);
+      this.passEncoder.setPipeline(this.triangleShaderPipeline);
+      this.passEncoder.setBindGroup(0, shadingInfo.shaderuniformbindgroup);
       this.passEncoder.setVertexBuffer(0, object.mesh.getPositionBuffer());
       this.passEncoder.setVertexBuffer(1, object.mesh.getColorBuffer());
       this.passEncoder.setIndexBuffer(object.mesh.getIndexBuffer());
@@ -217,6 +248,6 @@ export default class MyRenderer implements ISceneRenderer {
     }
     this.passEncoder.endPass();
 
-    this.queue.submit([this.commandEncoder.finish()]);
+    this.device.defaultQueue.submit([this.commandEncoder.finish()]);
   }
 }

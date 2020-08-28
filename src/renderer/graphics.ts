@@ -16,10 +16,6 @@ class Graphics implements IGraphics {
 
   private queue: GPUQueue = null;
 
-  public triangleShader: Shader = null;
-  private volumeShader: Shader = null;
-  private triangleShaderPipeline: GPURenderPipeline = null;
-
   async init(): Promise<void> {
     try {
       if (!navigator.gpu) {
@@ -30,29 +26,32 @@ class Graphics implements IGraphics {
       console.log("ADAPTER:  " + this.adapter.name);
       console.log("EXTENSIONS :  ");
       this.adapter.extensions.forEach((ext) => console.log("    " + ext));
-
-      await this.loadAllShaders();
     } catch (e) {
       console.error(e);
       this.initFallback();
     }
   }
   cleanup(): void {}
-  createDefaultRenderer(): ISceneRenderer {
-    return new MyRenderer(this.device);
+
+  async createDefaultRenderer(): Promise<ISceneRenderer> {
+    const r = new MyRenderer(this.device);
+    await r.initPostCtor();
+    return r;
   }
+
   //createNormalsRenderer(): ISceneRenderer {}
+
   createCanvasRenderTarget(canvas: HTMLCanvasElement): IRenderTarget {
     return new CanvasRenderTarget(canvas, this.device);
   }
 
   createMesh(
-    indices: Uint32Array | Uint16Array,
+    indices: Uint16Array,
     vertices: Float32Array,
     normals: Float32Array,
     uvs?: Float32Array
   ): Mesh {
-    return new Mesh(this.device, vertices, normals, null, indices);
+    return new Mesh(this.device, vertices, normals, uvs, indices);
   }
 
   private async initWebGPU(): Promise<void> {
@@ -111,19 +110,6 @@ class Graphics implements IGraphics {
       // Try to get a device again.
       this.ensureDevice();
     });
-  }
-
-  private async loadAllShaders(): Promise<void> {
-    this.triangleShader = new Shader(triangle_vert_spv, triangle_frag_spv);
-    await this.triangleShader.load(this.device);
-    // Graphics Pipeline
-
-    this.triangleShaderPipeline = this.createRenderPipeline(
-      this.triangleShader
-    );
-
-    this.volumeShader = new Shader(volume_vert_spv, volume_frag_spv);
-    await this.volumeShader.load(this.device);
   }
 }
 export default Graphics;

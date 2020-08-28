@@ -37,7 +37,9 @@ export default class Mesh {
     };
 
     this.positionBuffer = createBuffer(vertices, GPUBufferUsage.VERTEX);
-    this.colorBuffer = createBuffer(colors, GPUBufferUsage.VERTEX);
+    this.colorBuffer = colors
+      ? createBuffer(colors, GPUBufferUsage.VERTEX)
+      : null;
     this.indexBuffer = createBuffer(indices, GPUBufferUsage.INDEX);
   }
 

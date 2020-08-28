@@ -21,7 +21,7 @@ const graphics = new Graphics();
 const CANVAS_ID = "raygbiv";
 
 // initialize graphics here
-graphics.init().then(() => {
+graphics.init().then(async () => {
   const canvas: HTMLCanvasElement = document.getElementById(
     CANVAS_ID
   ) as HTMLCanvasElement;
@@ -44,24 +44,24 @@ graphics.init().then(() => {
     new Float32Array([1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0])
   );
 
-  const shaderobj = myRenderer.triangleShader;
+  //const shaderobj = myRenderer.triangleShader;
 
   //uniformBuffer.setSubData(0, camera.getProjectionMatrix(), 0, )
 
   // Graphics Pipeline
 
-  const pipeline: GPURenderPipeline = myRenderer.createRenderPipeline(
-    shaderobj
-  );
+  // const pipeline: GPURenderPipeline = myRenderer.createRenderPipeline(
+  //   shaderobj
+  // );
 
   const m1 = mat4.fromTranslation(mat4.create(), vec3.fromValues(1, 0, 1));
-  scene.addSceneObject(myMesh, shaderobj, m1);
+  scene.addSceneObject(myMesh, m1);
   const m2 = mat4.fromTranslation(mat4.create(), vec3.fromValues(-1, 0, -1));
-  scene.addSceneObject(myMesh, shaderobj, m2);
+  scene.addSceneObject(myMesh, m2);
   const m3 = mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, 0));
-  scene.addSceneObject(myMesh, shaderobj, m3);
+  scene.addSceneObject(myMesh, m3);
 
-  const sceneRenderer = graphics.createDefaultRenderer();
+  const sceneRenderer = await graphics.createDefaultRenderer();
   // infinite render loop.
   function renderloop() {
     renderTarget.swap();

@@ -1,3 +1,8 @@
+// pad to a multiple of 4
+function mypad(x: number): number {
+  return x % 4 ? x + (4 - (x % 4)) : x;
+}
+
 export default class Shader {
   private vspath = "";
   private fspath = "";
@@ -53,6 +58,69 @@ export default class Shader {
       bindGroupLayouts: [this.uniformBindGroupLayout],
     });
     console.log("pipeline and uniform group layouts created");
+  }
+
+  public createUniformBuffer(): GPUBuffer {
+    const uniformData = new Float32Array([
+      // ♟️ ModelViewProjection Matrix
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+
+      // 🔴 Primary Color
+      0.9,
+      0.1,
+      0.3,
+      1.0,
+
+      // 🟣 Accent Color
+      0.8,
+      0.2,
+      0.8,
+      1.0,
+    ]);
+
+    // Helper function for creating GPUBuffer(s) out of Typed Arrays
+    const createBuffer = (arr: Float32Array | Uint16Array, usage: number) => {
+      const desc = {
+        size: mypad(arr.byteLength),
+        usage,
+        mappedAtCreation: true,
+      };
+      console.log("create mesh buffer " + arr.byteLength);
+      // @ts-ignore TS2339
+      const [buffer, bufferMapped] = this.device.createBufferMapped(desc);
+      //const bufferMapped = buffer.getMappedRange(0, arr.byteLength);
+
+      const writeArray =
+        arr instanceof Uint16Array
+          ? new Uint16Array(bufferMapped)
+          : new Float32Array(bufferMapped);
+      writeArray.set(arr);
+      buffer.unmap();
+      return buffer;
+    };
+
+    // stick this data into a gpu buffer
+    const uniformBuffer: GPUBuffer = createBuffer(
+      uniformData,
+      GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    );
+
+    return uniformBuffer;
   }
 
   public createShaderBindGroup(uniformBuffer: GPUBuffer): GPUBindGroup {

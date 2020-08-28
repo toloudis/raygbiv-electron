@@ -27,6 +27,36 @@ class CanvasRenderTarget implements IRenderTarget {
       "gpupresent"
     ) as unknown) as GPUCanvasContext;
 
+    // Create Swapchain
+    const swapChainDesc: GPUSwapChainDescriptor = {
+      device: this.device,
+      format: "bgra8unorm",
+      usage: GPUTextureUsage.OUTPUT_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+    };
+    this.swapchain = context.configureSwapChain(swapChainDesc);
+    console.log("Swap chain created");
+
+    // Create Depth Backing
+    const depthTextureDesc: GPUTextureDescriptor = {
+      size: {
+        width: this.renderWidth,
+        height: this.renderHeight,
+        depth: 1,
+      },
+      // arrayLayerCount: 1,
+      mipLevelCount: 1,
+      sampleCount: 1,
+      dimension: "2d",
+      format: "depth24plus-stencil8",
+      usage: GPUTextureUsage.OUTPUT_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+    };
+
+    this.depthTexture = this.device.createTexture(depthTextureDesc);
+    this.depthTextureView = this.depthTexture.createView();
+
+    this.colorTexture = this.swapchain.getCurrentTexture();
+    this.colorTextureView = this.colorTexture.createView();
+
     console.log("Created swapchain texture images");
   }
 

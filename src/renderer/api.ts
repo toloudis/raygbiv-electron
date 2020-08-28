@@ -28,7 +28,10 @@ interface ISceneRenderer {
 interface IGraphics {
   init(): void;
   cleanup(): void;
-  createDefaultRenderer(): ISceneRenderer;
+
+  // async only because of loading shaders/resources which may be async
+  createDefaultRenderer(): Promise<ISceneRenderer>;
+
   //createNormalsRenderer(): ISceneRenderer;
   createCanvasRenderTarget(canvas: HTMLCanvasElement): IRenderTarget;
   // createImageRenderTarget(
