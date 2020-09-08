@@ -46,6 +46,16 @@ interface IGraphics {
     normals: Float32Array,
     uvs?: Float32Array
   ): Mesh;
+
+  createVolume(
+    volumedata: Uint8Array,
+    x: number,
+    y: number,
+    z: number,
+    px: number,
+    py: number,
+    pz: number
+  ): Volume;
 }
 
 export { EPixelFormat, ISceneRenderer, IRenderTarget, IGraphics };
