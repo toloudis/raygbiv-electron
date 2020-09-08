@@ -28,7 +28,7 @@
     "build": "webpack --config webpack.config.js",
     "lint": "eslint",
     "start": "npm run build && electron ./dist/main.js",
-    "shaders": "node build-shaders.js",
+    "shaders": "node build-shaders.mjs",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
     "postinstall": "electron-builder install-app-deps"

@@ -30,5 +30,6 @@ for (const file of files) {
       targetPath,
       compiler.compileGLSL(glsl, extensions[extension])
     );
+    console.log("Wrote shader " + targetPath);
   }
 }
