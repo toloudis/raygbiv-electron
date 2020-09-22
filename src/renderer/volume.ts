@@ -1,3 +1,5 @@
+import { createCube } from "./geometries";
+
 // pad to a multiple of 4
 function mypad(x: number): number {
   return x % 4 ? x + (4 - (x % 4)) : x;
@@ -48,11 +50,14 @@ export default class Volume {
       return buffer;
     };
 
+    // unit cube
+    const cubedata = createCube();
+
     this.positionBuffer = createBuffer(
-      new Float32Array([]),
+      cubedata.positions,
       GPUBufferUsage.VERTEX
     );
-    this.indexBuffer = createBuffer(new Float32Array([]), GPUBufferUsage.INDEX);
+    this.indexBuffer = createBuffer(cubedata.indices, GPUBufferUsage.INDEX);
   }
 
   getPositionBuffer(): GPUBuffer {
