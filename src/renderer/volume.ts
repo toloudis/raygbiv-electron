@@ -52,7 +52,7 @@ export default class Volume {
       new Float32Array([]),
       GPUBufferUsage.VERTEX
     );
-    this.indexBuffer = createBuffer(indices, GPUBufferUsage.INDEX);
+    this.indexBuffer = createBuffer(new Float32Array([]), GPUBufferUsage.INDEX);
   }
 
   getPositionBuffer(): GPUBuffer {

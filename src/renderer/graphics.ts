@@ -9,6 +9,7 @@ import volume_frag_spv from "./shaders/volume.frag.spv";
 import volume_vert_spv from "./shaders/volume.vert.spv";
 import MyRenderer from "./renderer";
 import CanvasRenderTarget from "./canvasRenderTarget";
+import Volume from "./volume";
 
 class Graphics implements IGraphics {
   private adapter: GPUAdapter = null;
@@ -52,6 +53,17 @@ class Graphics implements IGraphics {
     uvs?: Float32Array
   ): Mesh {
     return new Mesh(this.device, vertices, normals, uvs, indices);
+  }
+  createVolume(
+    volumedata: Uint8Array,
+    x: number,
+    y: number,
+    z: number,
+    px: number,
+    py: number,
+    pz: number
+  ): Volume {
+    return new Volume(this.device, volumedata, x, y, z, px, py, pz);
   }
 
   private async initWebGPU(): Promise<void> {
