@@ -32,6 +32,7 @@ interface IGraphics {
 
   // async only because of loading shaders/resources which may be async
   createDefaultRenderer(): Promise<ISceneRenderer>;
+  createSimpleVolumeRenderer(): Promise<ISceneRenderer>;
 
   //createNormalsRenderer(): ISceneRenderer;
   createCanvasRenderTarget(canvas: HTMLCanvasElement): IRenderTarget;

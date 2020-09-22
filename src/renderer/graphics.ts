@@ -8,6 +8,7 @@ import triangle_vert_spv from "./shaders/triangle.vert.spv";
 import volume_frag_spv from "./shaders/volume.frag.spv";
 import volume_vert_spv from "./shaders/volume.vert.spv";
 import MyRenderer from "./renderer";
+import SimpleVolumeRenderer from "./simpleVolumeRenderer";
 import CanvasRenderTarget from "./canvasRenderTarget";
 import Volume from "./volume";
 
@@ -36,6 +37,12 @@ class Graphics implements IGraphics {
 
   async createDefaultRenderer(): Promise<ISceneRenderer> {
     const r = new MyRenderer(this.device);
+    await r.initPostCtor();
+    return r;
+  }
+
+  async createSimpleVolumeRenderer(): Promise<ISceneRenderer> {
+    const r = new SimpleVolumeRenderer(this.device);
     await r.initPostCtor();
     return r;
   }
