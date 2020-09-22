@@ -7,6 +7,7 @@ import Graphics from "./renderer/graphics";
 import Camera from "./renderer/camera";
 import CameraController from "./renderer/cameraController";
 import Scene from "./renderer/scene";
+import { VolumeMaker } from "./renderer/geometries";
 
 const camera = new Camera();
 const scene = new Scene();
@@ -44,6 +45,9 @@ graphics.init().then(async () => {
     new Float32Array([1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0])
   );
 
+  const voldata = VolumeMaker.createSphere(128, 128, 128, 32);
+  const myVol = graphics.createVolume(voldata, 128, 128, 128, 1.0, 1.0, 1.0);
+
   //const shaderobj = myRenderer.triangleShader;
 
   //uniformBuffer.setSubData(0, camera.getProjectionMatrix(), 0, )
@@ -53,6 +57,9 @@ graphics.init().then(async () => {
   // const pipeline: GPURenderPipeline = myRenderer.createRenderPipeline(
   //   shaderobj
   // );
+
+  const mOrigin = mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, 0));
+  scene.addSceneObject(myVol, mOrigin);
 
   const m1 = mat4.fromTranslation(mat4.create(), vec3.fromValues(1, 0, 1));
   scene.addSceneObject(myMesh, m1);
