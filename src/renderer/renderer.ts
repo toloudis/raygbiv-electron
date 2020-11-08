@@ -4,7 +4,7 @@ import { IRenderTarget, ISceneRenderer } from "./api";
 import Camera from "./camera";
 import Mesh from "./mesh";
 import Scene from "./scene";
-import SceneObject from "./sceneObject";
+import { SceneObject, SceneMesh } from "./sceneObject";
 import Shader from "./shader";
 import CanvasRenderTarget from "./canvasRenderTarget";
 
@@ -196,7 +196,11 @@ export default class MyRenderer implements ISceneRenderer {
       }
 
       // apply the model transform
-      const projViewModel = mat4.mul(mat4.create(), projView, object.transform);
+      const projViewModel = mat4.mul(
+        mat4.create(),
+        projView,
+        object.getTransform()
+      );
       // TODO don't create this every time?
       // @ts-ignore TS2339
       const [upload, mapping] = this.device.createBufferMapped({
@@ -241,9 +245,17 @@ export default class MyRenderer implements ISceneRenderer {
 
       this.passEncoder.setPipeline(this.triangleShaderPipeline);
       this.passEncoder.setBindGroup(0, shadingInfo.shaderuniformbindgroup);
-      this.passEncoder.setVertexBuffer(0, object.mesh.getPositionBuffer());
-      this.passEncoder.setVertexBuffer(1, object.mesh.getColorBuffer());
-      this.passEncoder.setIndexBuffer(object.mesh.getIndexBuffer());
+      this.passEncoder.setVertexBuffer(
+        0,
+        (object as SceneMesh).mesh.getPositionBuffer()
+      );
+      this.passEncoder.setVertexBuffer(
+        1,
+        (object as SceneMesh).mesh.getColorBuffer()
+      );
+      this.passEncoder.setIndexBuffer(
+        (object as SceneMesh).mesh.getIndexBuffer()
+      );
       this.passEncoder.drawIndexed(3, 1, 0, 0, 0);
     }
     this.passEncoder.endPass();

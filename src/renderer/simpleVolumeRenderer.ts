@@ -4,7 +4,7 @@ import { IRenderTarget, ISceneRenderer } from "./api";
 import Camera from "./camera";
 import Mesh from "./mesh";
 import Scene from "./scene";
-import SceneObject from "./sceneObject";
+import { SceneObject } from "./sceneObject";
 import Shader from "./shader";
 import CanvasRenderTarget from "./canvasRenderTarget";
 
@@ -194,7 +194,11 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
       }
 
       // apply the model transform
-      const projViewModel = mat4.mul(mat4.create(), projView, object.transform);
+      const projViewModel = mat4.mul(
+        mat4.create(),
+        projView,
+        object.getTransform()
+      );
       // TODO don't create this every time?
       // @ts-ignore TS2339
       const [upload, mapping] = this.device.createBufferMapped({

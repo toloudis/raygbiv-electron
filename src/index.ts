@@ -60,15 +60,17 @@ graphics.init().then(async () => {
 
   const mOrigin = mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, 0));
   scene.addSceneObject(myVol, mOrigin);
+  const sceneRenderer = await graphics.createSimpleVolumeRenderer();
 
-  const m1 = mat4.fromTranslation(mat4.create(), vec3.fromValues(1, 0, 1));
-  scene.addSceneObject(myMesh, m1);
-  const m2 = mat4.fromTranslation(mat4.create(), vec3.fromValues(-1, 0, -1));
-  scene.addSceneObject(myMesh, m2);
-  const m3 = mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, 0));
-  scene.addSceneObject(myMesh, m3);
+  // const m1 = mat4.fromTranslation(mat4.create(), vec3.fromValues(1, 0, 1));
+  // scene.addSceneObject(myMesh, m1);
+  // const m2 = mat4.fromTranslation(mat4.create(), vec3.fromValues(-1, 0, -1));
+  // scene.addSceneObject(myMesh, m2);
+  // const m3 = mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, 0));
+  // scene.addSceneObject(myMesh, m3);
 
-  const sceneRenderer = await graphics.createDefaultRenderer();
+  // const sceneRenderer = await graphics.createDefaultRenderer();
+
   // infinite render loop.
   function renderloop() {
     renderTarget.swap();

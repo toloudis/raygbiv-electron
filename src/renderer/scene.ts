@@ -1,7 +1,8 @@
 import { mat4 } from "gl-matrix";
 
-import SceneObject from "./sceneObject";
+import { SceneObject, SceneMesh, SceneVolume } from "./sceneObject";
 import Mesh from "./mesh";
+import Volume from "./volume";
 import Shader from "./shader";
 
 class Scene {
@@ -11,8 +12,10 @@ class Scene {
     this.objects = [];
   }
 
-  public addSceneObject(mesh: Mesh, transform: mat4) {
-    this.objects.push(new SceneObject(mesh, transform));
+  public addSceneObject(mesh: Mesh | Volume, transform: mat4) {
+    // TODO Switch on type
+    this.objects.push(new SceneMesh(mesh, transform));
+    this.objects.push(new SceneVolume(mesh, transform));
   }
 }
 
