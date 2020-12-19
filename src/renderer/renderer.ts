@@ -254,7 +254,7 @@ export default class MyRenderer implements ISceneRenderer {
         (object as SceneMesh).mesh.getColorBuffer()
       );
       this.passEncoder.setIndexBuffer(
-        (object as SceneMesh).mesh.getIndexBuffer()
+        (object as SceneMesh).mesh.getIndexBuffer(), (object as SceneMesh).mesh.getIndexFormat() 
       );
       this.passEncoder.drawIndexed(3, 1, 0, 0, 0);
     }

@@ -14,8 +14,12 @@ class Scene {
 
   public addSceneObject(mesh: Mesh | Volume, transform: mat4) {
     // TODO Switch on type
-    this.objects.push(new SceneMesh(mesh, transform));
-    this.objects.push(new SceneVolume(mesh, transform));
+    if (mesh instanceof Mesh) {
+      this.objects.push(new SceneMesh(mesh, transform));
+    }
+    else if (mesh instanceof Volume) {
+      this.objects.push(new SceneVolume(mesh, transform));
+    }
   }
 }
 

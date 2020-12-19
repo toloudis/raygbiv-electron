@@ -4,7 +4,7 @@ import { IRenderTarget, ISceneRenderer } from "./api";
 import Camera from "./camera";
 import Mesh from "./mesh";
 import Scene from "./scene";
-import { SceneObject } from "./sceneObject";
+import { SceneObject, SceneVolume } from "./sceneObject";
 import Shader from "./shader";
 import CanvasRenderTarget from "./canvasRenderTarget";
 
@@ -238,14 +238,14 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
     );
 
     for (let i = 0; i < scene.objects.length; ++i) {
-      const object: SceneObject = scene.objects[i];
+      const object: SceneVolume = scene.objects[i] as SceneVolume;
       let shadingInfo: MySceneObjectUniforms = this.gpuScene.get(object);
 
       this.passEncoder.setPipeline(this.volumeShaderPipeline);
       this.passEncoder.setBindGroup(0, shadingInfo.shaderuniformbindgroup);
-      this.passEncoder.setVertexBuffer(0, object.mesh.getPositionBuffer());
-      this.passEncoder.setVertexBuffer(1, object.mesh.getColorBuffer());
-      this.passEncoder.setIndexBuffer(object.mesh.getIndexBuffer());
+      this.passEncoder.setVertexBuffer(0, object.getPositionBuffer());
+      this.passEncoder.setVertexBuffer(1, object.getColorBuffer());
+      this.passEncoder.setIndexBuffer(object.getIndexBuffer(), object.getIndexFormat());
       this.passEncoder.drawIndexed(3, 1, 0, 0, 0);
     }
     this.passEncoder.endPass();

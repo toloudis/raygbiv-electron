@@ -52,4 +52,7 @@ export default class Mesh {
   getIndexBuffer(): GPUBuffer {
     return this.indexBuffer;
   }
+  getIndexFormat(): GPUIndexFormat {
+    return "uint16";
+  }
 }
