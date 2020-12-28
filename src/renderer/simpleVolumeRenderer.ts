@@ -243,9 +243,9 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
 
       this.passEncoder.setPipeline(this.volumeShaderPipeline);
       this.passEncoder.setBindGroup(0, shadingInfo.shaderuniformbindgroup);
-      this.passEncoder.setVertexBuffer(0, object.getPositionBuffer());
-      this.passEncoder.setVertexBuffer(1, object.getColorBuffer());
-      this.passEncoder.setIndexBuffer(object.getIndexBuffer(), object.getIndexFormat());
+      this.passEncoder.setVertexBuffer(0, object.getVolume().getPositionBuffer());
+      //this.passEncoder.setVertexBuffer(1, object.getColorBuffer());
+      this.passEncoder.setIndexBuffer(object.getVolume().getIndexBuffer(), object.getVolume().getIndexFormat());
       this.passEncoder.drawIndexed(3, 1, 0, 0, 0);
     }
     this.passEncoder.endPass();

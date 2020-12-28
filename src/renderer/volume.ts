@@ -66,6 +66,10 @@ export default class Volume {
   getIndexBuffer(): GPUBuffer {
     return this.indexBuffer;
   }
+  getIndexFormat(): GPUIndexFormat {
+    return "uint16";
+  }
+
 }
 
 function createVolumeTexture(
