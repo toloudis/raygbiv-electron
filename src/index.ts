@@ -45,8 +45,8 @@ graphics.init().then(async () => {
     new Float32Array([1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0])
   );
 
-  const voldata = VolumeMaker.createSphere(128, 128, 128, 32);
-  const myVol = graphics.createVolume(voldata, 128, 128, 128, 1.0, 1.0, 1.0);
+  const voldata = VolumeMaker.createSphere(256, 256, 256, 64);
+  const myVol = graphics.createVolume(voldata, 256, 256, 256, 1.0, 1.0, 1.0);
 
   //const shaderobj = myRenderer.triangleShader;
 

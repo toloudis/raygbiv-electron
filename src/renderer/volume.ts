@@ -1,9 +1,5 @@
+import { mypad } from "./bufferUtil";
 import { createCube } from "./geometries";
-
-// pad to a multiple of 4
-function mypad(x: number): number {
-  return x % 4 ? x + (4 - (x % 4)) : x;
-}
 
 export default class Volume {
   private positionBuffer: GPUBuffer = null;
@@ -37,9 +33,8 @@ export default class Volume {
         mappedAtCreation: true,
       };
       console.log("create mesh buffer " + arr.byteLength);
-      // @ts-ignore TS2339
-      const [buffer, bufferMapped] = device.createBufferMapped(desc);
-      //const bufferMapped = buffer.getMappedRange(0, arr.byteLength);
+      const buffer = device.createBuffer(desc);
+      const bufferMapped = buffer.getMappedRange(0, desc.size);
 
       const writeArray =
         arr instanceof Uint16Array
@@ -69,7 +64,6 @@ export default class Volume {
   getIndexFormat(): GPUIndexFormat {
     return "uint16";
   }
-
 }
 
 function createVolumeTexture(
@@ -84,8 +78,8 @@ function createVolumeTexture(
   // if not, then we need to copy into a new buffer with the proper stride
   // for now, assume
   const bytesPerRow = x;
-  if (bytesPerRow % 4 > 0) {
-    console.error("Volume needs row stride of 4");
+  if (bytesPerRow % 256 > 0) {
+    console.error("Volume texture needs row stride of multiple of 256");
   }
 
   const texture = device.createTexture({
@@ -98,13 +92,13 @@ function createVolumeTexture(
     usage: GPUTextureUsage.COPY_DST | usage,
   });
 
-  // @ts-ignore TS2339
-  const [textureDataBuffer, mapping] = device.createBufferMapped({
-    size: data.byteLength, // TODO PAD TO 4 bytes
+  const paddedBufferSize = mypad(data.byteLength);
+  const textureDataBuffer = device.createBuffer({
+    size: paddedBufferSize,
     usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
     mappedAtCreation: true,
   });
-  //const mapping = textureDataBuffer.getMappedRange(0, data.byteLength);
+  const mapping = textureDataBuffer.getMappedRange(0, paddedBufferSize);
   new Uint8Array(mapping).set(data);
   textureDataBuffer.unmap();
 
@@ -113,6 +107,7 @@ function createVolumeTexture(
     {
       buffer: textureDataBuffer,
       bytesPerRow,
+      rowsPerImage: y,
     },
     {
       texture: texture,

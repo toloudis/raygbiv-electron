@@ -16,8 +16,7 @@ class Scene {
     // TODO Switch on type
     if (mesh instanceof Mesh) {
       this.objects.push(new SceneMesh(mesh, transform));
-    }
-    else if (mesh instanceof Volume) {
+    } else if (mesh instanceof Volume) {
       this.objects.push(new SceneVolume(mesh, transform));
     }
   }

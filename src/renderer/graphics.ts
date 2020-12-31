@@ -61,6 +61,7 @@ class Graphics implements IGraphics {
   ): Mesh {
     return new Mesh(this.device, vertices, normals, uvs, indices);
   }
+
   createVolume(
     volumedata: Uint8Array,
     x: number,

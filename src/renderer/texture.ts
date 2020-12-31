@@ -1,3 +1,5 @@
+import { mypad } from "./bufferUtil";
+
 export async function createTextureFromImage(
   device: GPUDevice,
   src: string,
@@ -52,13 +54,13 @@ export async function createTextureFromImage(
     usage: GPUTextureUsage.COPY_DST | usage,
   });
 
-  // @ts-ignore TS2339
-  const [textureDataBuffer, mapping] = device.createBufferMapped({
-    size: data.byteLength, // TODO PAD TO 4 bytes
+  const paddedBufferSize = mypad(data.byteLength);
+  const textureDataBuffer = device.createBuffer({
+    size: paddedBufferSize,
     usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
     mappedAtCreation: true,
   });
-  //const mapping = textureDataBuffer.getMappedRange(0, data.byteLength);
+  const mapping = textureDataBuffer.getMappedRange(0, paddedBufferSize);
   new Uint8Array(mapping).set(data);
   textureDataBuffer.unmap();
 
@@ -67,6 +69,7 @@ export async function createTextureFromImage(
     {
       buffer: textureDataBuffer,
       bytesPerRow,
+      rowsPerImage: img.height,
     },
     {
       texture: texture,

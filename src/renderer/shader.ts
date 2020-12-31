@@ -1,7 +1,4 @@
-// pad to a multiple of 4
-function mypad(x: number): number {
-  return x % 4 ? x + (4 - (x % 4)) : x;
-}
+import { mypad } from "./bufferUtil";
 
 export default class Shader {
   private vspath = "";
@@ -94,16 +91,18 @@ export default class Shader {
     ]);
 
     // Helper function for creating GPUBuffer(s) out of Typed Arrays
+
     const createBuffer = (arr: Float32Array | Uint16Array, usage: number) => {
+      const paddedBufferSize = mypad(arr.byteLength);
       const desc = {
-        size: mypad(arr.byteLength),
+        size: paddedBufferSize,
         usage,
         mappedAtCreation: true,
       };
       console.log("create mesh buffer " + arr.byteLength);
       // @ts-ignore TS2339
-      const [buffer, bufferMapped] = this.device.createBufferMapped(desc);
-      //const bufferMapped = buffer.getMappedRange(0, arr.byteLength);
+      const buffer = this.device.createBuffer(desc);
+      const bufferMapped = buffer.getMappedRange(0, paddedBufferSize);
 
       const writeArray =
         arr instanceof Uint16Array
@@ -164,7 +163,8 @@ export default class Shader {
     };
 
     const vertexState: GPUVertexStateDescriptor = {
-      indexFormat: "uint16",
+      //indexFormat must be undefined when using non-strip primitive topologies
+      indexFormat: undefined, //"uint16",
       vertexBuffers: [positionBufferDesc, colorBufferDesc],
     };
     return vertexState;

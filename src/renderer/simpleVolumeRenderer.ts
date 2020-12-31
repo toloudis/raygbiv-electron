@@ -1,6 +1,7 @@
 import { mat4 } from "gl-matrix";
 
 import { IRenderTarget, ISceneRenderer } from "./api";
+import { mypad } from "./bufferUtil";
 import Camera from "./camera";
 import Mesh from "./mesh";
 import Scene from "./scene";
@@ -56,11 +57,11 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
 
   // Helper function for creating GPUBuffer(s) out of Typed Arrays
   createBuffer(arr: Float32Array | Uint16Array, usage: number): GPUBuffer {
-    const desc = { size: arr.byteLength, usage, mappedAtCreation: true };
+    const paddedBufferSize = mypad(arr.byteLength);
+    const desc = { size: paddedBufferSize, usage, mappedAtCreation: true };
     console.log("CreateBuffer Mapped " + arr.byteLength);
-    // @ts-ignore TS2339
-    const [buffer, bufferMapped] = this.device.createBufferMapped(desc);
-    //const bufferMapped = buffer.getMappedRange(0, arr.byteLength);
+    const buffer = this.device.createBuffer(desc);
+    const bufferMapped = buffer.getMappedRange(0, paddedBufferSize);
 
     const writeArray =
       arr instanceof Uint16Array
@@ -200,13 +201,12 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
         object.getTransform()
       );
       // TODO don't create this every time?
-      // @ts-ignore TS2339
-      const [upload, mapping] = this.device.createBufferMapped({
+      const upload = this.device.createBuffer({
         size: 16 * 4,
         usage: GPUBufferUsage.COPY_SRC,
         mappedAtCreation: true,
       });
-      //const mapping = upload.getMappedRange(0, 16 * 4);
+      const mapping = upload.getMappedRange(0, 16 * 4);
 
       new Float32Array(mapping).set(projViewModel);
       upload.unmap();
@@ -243,9 +243,15 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
 
       this.passEncoder.setPipeline(this.volumeShaderPipeline);
       this.passEncoder.setBindGroup(0, shadingInfo.shaderuniformbindgroup);
-      this.passEncoder.setVertexBuffer(0, object.getVolume().getPositionBuffer());
+      this.passEncoder.setVertexBuffer(
+        0,
+        object.getVolume().getPositionBuffer()
+      );
       //this.passEncoder.setVertexBuffer(1, object.getColorBuffer());
-      this.passEncoder.setIndexBuffer(object.getVolume().getIndexBuffer(), object.getVolume().getIndexFormat());
+      this.passEncoder.setIndexBuffer(
+        object.getVolume().getIndexBuffer(),
+        object.getVolume().getIndexFormat()
+      );
       this.passEncoder.drawIndexed(3, 1, 0, 0, 0);
     }
     this.passEncoder.endPass();
