@@ -180,7 +180,45 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
       let shadingInfo: MySceneObjectUniforms = this.gpuScene.get(object);
       if (!shadingInfo) {
         // stick this data into a gpu buffer
-        const uniformBuffer: GPUBuffer = this.volumeShader.createUniformBuffer();
+        const uniformBuffer: GPUBuffer = this.volumeShader.createUniformBuffer(
+          new Float32Array([
+            // ♟️ ModelView Matrix
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+
+            // ♟️ Projection Matrix
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+          ])
+        );
 
         // attach this buffer to the shader
         const shaderuniformbindgroup = this.volumeShader.createShaderBindGroup(

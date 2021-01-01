@@ -183,7 +183,39 @@ export default class MyRenderer implements ISceneRenderer {
       let shadingInfo: MySceneObjectUniforms = this.gpuScene.get(object);
       if (!shadingInfo) {
         // stick this data into a gpu buffer
-        const uniformBuffer: GPUBuffer = this.triangleShader.createUniformBuffer();
+        const uniformBuffer: GPUBuffer = this.triangleShader.createUniformBuffer(
+          new Float32Array([
+            // ♟️ ModelViewProjection Matrix
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+
+            // 🔴 Primary Color
+            0.9,
+            0.1,
+            0.3,
+            1.0,
+
+            // 🟣 Accent Color
+            0.8,
+            0.2,
+            0.8,
+            1.0,
+          ])
+        );
 
         // attach this buffer to the shader
         const shaderuniformbindgroup = this.triangleShader.createShaderBindGroup(

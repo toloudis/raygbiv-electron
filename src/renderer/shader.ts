@@ -48,6 +48,22 @@ export default class Shader {
           visibility: GPUShaderStage.VERTEX,
           type: "uniform-buffer" as GPUBindingType,
         },
+        {
+          binding: 1, // binding 0 for set 0 in the VS glsl is a uniform buffer
+          visibility: GPUShaderStage.FRAGMENT,
+          type: "sampler" as GPUBindingType,
+        },
+        {
+          binding: 2, // binding 0 for set 0 in the VS glsl is a uniform buffer
+          visibility: GPUShaderStage.FRAGMENT,
+          type: "sampled-texture" as GPUBindingType,
+          viewDimension: "3d" as GPUTextureViewDimension,
+        },
+        {
+          binding: 3, // binding 0 for set 0 in the VS glsl is a uniform buffer
+          visibility: GPUShaderStage.FRAGMENT,
+          type: "uniform-buffer" as GPUBindingType,
+        },
       ],
     });
     this.pipelineLayout = this.device.createPipelineLayout({
@@ -57,39 +73,7 @@ export default class Shader {
     console.log("pipeline and uniform group layouts created");
   }
 
-  public createUniformBuffer(): GPUBuffer {
-    const uniformData = new Float32Array([
-      // ♟️ ModelViewProjection Matrix
-      1.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      1.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      1.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      1.0,
-
-      // 🔴 Primary Color
-      0.9,
-      0.1,
-      0.3,
-      1.0,
-
-      // 🟣 Accent Color
-      0.8,
-      0.2,
-      0.8,
-      1.0,
-    ]);
-
+  public createUniformBuffer(uniformData: Float32Array): GPUBuffer {
     // Helper function for creating GPUBuffer(s) out of Typed Arrays
 
     const createBuffer = (arr: Float32Array | Uint16Array, usage: number) => {

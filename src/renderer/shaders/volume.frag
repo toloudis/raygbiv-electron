@@ -8,7 +8,7 @@ layout(set = 0, binding = 1) uniform sampler textureSampler;
 layout(set = 0, binding = 2) uniform texture3D textureAtlas;
 // uniform sampler2D lut;
 
-layout(set = 0, binding = 0) uniform UBO {
+layout(set = 0, binding = 3) uniform UBO {
   mat4 inverseModelViewMatrix;
   vec2 iResolution;
   float isPerspective;
