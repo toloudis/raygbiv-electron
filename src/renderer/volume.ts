@@ -5,6 +5,7 @@ export default class Volume {
   private positionBuffer: GPUBuffer = null;
   private indexBuffer: GPUBuffer = null;
   private volumeBuffer: GPUTexture = null;
+  private volumeBufferView: GPUTextureView = null;
 
   constructor(
     device: GPUDevice,
@@ -24,6 +25,15 @@ export default class Volume {
       z,
       GPUTextureUsage.SAMPLED
     );
+    this.volumeBufferView = this.volumeBuffer.createView({
+      //format?: GPUTextureFormat;
+      dimension: "3d" as GPUTextureViewDimension,
+      //aspect?: GPUTextureAspect;
+      //baseArrayLayer?: number;
+      //baseMipLevel?: number;
+      //arrayLayerCount?: number;
+      //mipLevelCount?: number;
+    });
 
     // Helper function for creating GPUBuffer(s) out of Typed Arrays
     const createBuffer = (arr: Float32Array | Uint16Array, usage: number) => {
@@ -63,6 +73,10 @@ export default class Volume {
   }
   getIndexFormat(): GPUIndexFormat {
     return "uint16";
+  }
+
+  getVolumeBufferView(): GPUTextureView {
+    return this.volumeBufferView;
   }
 }
 

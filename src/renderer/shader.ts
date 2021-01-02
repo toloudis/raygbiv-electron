@@ -106,7 +106,12 @@ export default class Shader {
     return uniformBuffer;
   }
 
-  public createShaderBindGroup(uniformBuffer: GPUBuffer): GPUBindGroup {
+  public createShaderBindGroup(
+    uniformBuffer: GPUBuffer,
+    volSampler: GPUSampler,
+    volTex: GPUTextureView,
+    uniformParamsBuffer: GPUBuffer
+  ): GPUBindGroup {
     //  Bind Group
     // ✍ This would be used when encoding commands
     return this.device.createBindGroup({
@@ -114,9 +119,19 @@ export default class Shader {
       entries: [
         {
           binding: 0,
-          resource: {
-            buffer: uniformBuffer,
-          },
+          resource: { buffer: uniformBuffer },
+        },
+        {
+          binding: 1,
+          resource: volSampler,
+        },
+        {
+          binding: 2,
+          resource: volTex,
+        },
+        {
+          binding: 3,
+          resource: { buffer: uniformParamsBuffer },
         },
       ],
     });

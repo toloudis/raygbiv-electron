@@ -175,7 +175,7 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
 
     // gpu update all uniform buffers for all objects to update camera
     for (let i = 0; i < scene.objects.length; ++i) {
-      const object: SceneObject = scene.objects[i];
+      const object: SceneVolume = scene.objects[i] as SceneVolume;
 
       let shadingInfo: MySceneObjectUniforms = this.gpuScene.get(object);
       if (!shadingInfo) {
@@ -222,7 +222,10 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
 
         // attach this buffer to the shader
         const shaderuniformbindgroup = this.volumeShader.createShaderBindGroup(
-          uniformBuffer
+          uniformBuffer,
+          volSampler,
+          object.volume.getVolumeBufferView(),
+          uniformParamsBuffer
         );
 
         shadingInfo = {
