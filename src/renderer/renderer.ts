@@ -294,6 +294,6 @@ export default class MyRenderer implements ISceneRenderer {
     }
     this.passEncoder.endPass();
 
-    this.device.defaultQueue.submit([this.commandEncoder.finish()]);
+    this.device.queue.submit([this.commandEncoder.finish()]);
   }
 }

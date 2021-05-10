@@ -100,7 +100,7 @@ function createVolumeTexture(
     size: {
       width: x,
       height: y,
-      depth: z,
+      depthOrArrayLayers: z,
     },
     format: "r8uint",
     usage: GPUTextureUsage.COPY_DST | usage,
@@ -129,11 +129,11 @@ function createVolumeTexture(
     {
       width: x,
       height: y,
-      depth: z,
+      depthOrArrayLayers: z,
     }
   );
 
-  device.defaultQueue.submit([commandEncoder.finish()]);
+  device.queue.submit([commandEncoder.finish()]);
   textureDataBuffer.destroy();
 
   return texture;

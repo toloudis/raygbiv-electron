@@ -77,7 +77,7 @@ class Graphics implements IGraphics {
   private async initWebGPU(): Promise<void> {
     await this.ensureDevice();
     // ... Upload resources, etc.
-    this.queue = this.device.defaultQueue;
+    this.queue = this.device.queue;
   }
 
   private initFallback(): void {

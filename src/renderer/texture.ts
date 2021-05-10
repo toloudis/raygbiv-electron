@@ -48,7 +48,6 @@ export async function createTextureFromImage(
     size: {
       width: img.width,
       height: img.height,
-      depth: 1,
     },
     format: "rgba8unorm",
     usage: GPUTextureUsage.COPY_DST | usage,
@@ -77,11 +76,10 @@ export async function createTextureFromImage(
     {
       width: img.width,
       height: img.height,
-      depth: 1,
     }
   );
 
-  device.defaultQueue.submit([commandEncoder.finish()]);
+  device.queue.submit([commandEncoder.finish()]);
   textureDataBuffer.destroy();
 
   return texture;

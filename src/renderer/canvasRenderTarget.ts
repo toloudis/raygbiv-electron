@@ -31,7 +31,7 @@ class CanvasRenderTarget implements IRenderTarget {
     const swapChainDesc: GPUSwapChainDescriptor = {
       device: this.device,
       format: "bgra8unorm",
-      usage: GPUTextureUsage.OUTPUT_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+      usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
     };
     this.swapchain = context.configureSwapChain(swapChainDesc);
     console.log("Swap chain created");
@@ -41,14 +41,13 @@ class CanvasRenderTarget implements IRenderTarget {
       size: {
         width: this.renderWidth,
         height: this.renderHeight,
-        depth: 1,
       },
       // arrayLayerCount: 1,
       mipLevelCount: 1,
       sampleCount: 1,
       dimension: "2d",
       format: "depth24plus-stencil8",
-      usage: GPUTextureUsage.OUTPUT_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+      usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
     };
 
     this.depthTexture = this.device.createTexture(depthTextureDesc);

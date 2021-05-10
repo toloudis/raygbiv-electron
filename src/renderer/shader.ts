@@ -138,43 +138,43 @@ export default class Shader {
   }
 
   // TODO customize this for each shader (mesh, volume)
-  getVertexStateDesc(): GPUVertexStateDescriptor {
+  getVertexStateDesc(): GPUVertexState {
     // 🔣 Input Assembly
-    const positionAttribDesc: GPUVertexAttributeDescriptor = {
+    const positionAttribDesc: GPUVertexAttribute = {
       shaderLocation: 0, // [[attribute(0)]]
       offset: 0,
-      format: "float3",
+      format: "float32x3",
     };
-    const colorAttribDesc: GPUVertexAttributeDescriptor = {
+    const colorAttribDesc: GPUVertexAttribute = {
       shaderLocation: 1, // [[attribute(1)]]
       offset: 0,
-      format: "float3",
+      format: "float32x3",
     };
-    const positionBufferDesc: GPUVertexBufferLayoutDescriptor = {
+    const positionBufferDesc: GPUVertexBufferLayout = {
       attributes: [positionAttribDesc],
       arrayStride: 4 * 3, // sizeof(float) * 3
       stepMode: "vertex",
     };
-    const colorBufferDesc: GPUVertexBufferLayoutDescriptor = {
+    const colorBufferDesc: GPUVertexBufferLayout = {
       attributes: [colorAttribDesc],
       arrayStride: 4 * 3, // sizeof(float) * 3
       stepMode: "vertex",
     };
 
-    const vertexState: GPUVertexStateDescriptor = {
-      //indexFormat must be undefined when using non-strip primitive topologies
-      indexFormat: undefined, //"uint16",
-      vertexBuffers: [positionBufferDesc, colorBufferDesc],
+    const vertexState: GPUVertexState = {
+      buffers: [positionBufferDesc, colorBufferDesc],
+      module: this.vertModule,
+      entryPoint: "main",
     };
     return vertexState;
   }
 
   // 🖍️ Shader Modules
-  getVertexStage(): GPUProgrammableStageDescriptor {
+  getVertexStage(): GPUProgrammableStage {
     return { module: this.vertModule, entryPoint: "main" };
   }
 
-  getFragmentStage(): GPUProgrammableStageDescriptor {
+  getFragmentStage(): GPUProgrammableStage {
     return {
       module: this.fragModule,
       entryPoint: "main",
