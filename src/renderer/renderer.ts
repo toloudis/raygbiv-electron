@@ -78,49 +78,48 @@ export default class MyRenderer implements ISceneRenderer {
   createRenderPipeline(shaderobj: Shader): GPURenderPipeline {
     // Input Assembly
     const vertexState = shaderobj.getVertexStateDesc();
-
+    const fragStage = shaderobj.getFragmentStage();
     // Depth/Stencil State
-    const depthStencilState: GPUDepthStencilStateDescriptor = {
+    const depthStencilState: GPUDepthStencilState = {
       depthWriteEnabled: true,
       depthCompare: "less",
       format: "depth24plus-stencil8",
     };
 
-    // Blend State
-    const colorState: GPUColorStateDescriptor = {
+    const target0: GPUColorTargetState = {
       format: "bgra8unorm",
-      alphaBlend: {
-        srcFactor: "src-alpha",
-        dstFactor: "one-minus-src-alpha",
-        operation: "add",
-      },
-      colorBlend: {
-        srcFactor: "src-alpha",
-        dstFactor: "one-minus-src-alpha",
-        operation: "add",
+      blend: {
+        color: {
+          srcFactor: "src-alpha",
+          dstFactor: "one-minus-src-alpha",
+          operation: "add",
+        },
+        alpha: {
+          srcFactor: "src-alpha",
+          dstFactor: "one-minus-src-alpha",
+          operation: "add",
+        },
       },
       writeMask: GPUColorWrite.ALL,
-    };
-
-    // Rasterization
-    const rasterizationState: GPURasterizationStateDescriptor = {
-      frontFace: "cw",
-      cullMode: "none",
     };
 
     // Create the Pipeline
     const pipelineDesc: GPURenderPipelineDescriptor = {
       layout: shaderobj.getPipelineLayout(),
 
-      vertexStage: shaderobj.getVertexStage(),
-      fragmentStage: shaderobj.getFragmentStage(),
+      fragment: {
+        targets: [target0],
+        module: fragStage.module,
+        entryPoint: fragStage.entryPoint,
+      },
 
-      primitiveTopology: "triangle-list",
-      // array of "output" slots
-      colorStates: [colorState],
-      depthStencilState,
-      vertexState,
-      rasterizationState,
+      primitive: {
+        topology: "triangle-list",
+        frontFace: "cw",
+        cullMode: "none",
+      },
+      depthStencil: depthStencilState,
+      vertex: vertexState,
     };
     return this.device.createRenderPipeline(pipelineDesc);
   }
