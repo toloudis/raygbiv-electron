@@ -1,8 +1,5 @@
-//import * as WEBGPU from "@webgpu/types";
-
 import { vec3, mat4 } from "gl-matrix";
 
-import MyRenderer from "./renderer/renderer";
 import Graphics from "./renderer/graphics";
 import Camera from "./renderer/camera";
 import CameraController from "./renderer/cameraController";
@@ -25,10 +22,11 @@ const CANVAS_ID = "raygbiv";
 graphics
   .init()
   .then(async () => {
+    // tell the graphics system that we will render to this canvas
+
     const canvas: HTMLCanvasElement = document.getElementById(
       CANVAS_ID
     ) as HTMLCanvasElement;
-    // tell the graphics system that we will render to this canvas
     const renderTarget = graphics.createCanvasRenderTarget(canvas);
 
     // install camera controller
@@ -40,6 +38,8 @@ graphics
       1000.0
     );
 
+    // set up scene objects
+
     const myMesh = graphics.createMesh(
       new Uint16Array([0, 1, 2]),
       new Float32Array([1.0, -1.0, 0.0, -1.0, -1.0, 0.0, 0.0, 1.0, 0.0]),
@@ -47,26 +47,29 @@ graphics
       new Float32Array([1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0])
     );
 
-    // const voldata = VolumeMaker.createSphere(256, 256, 256, 64);
-    // const myVol = graphics.createVolume(voldata, 256, 256, 256, 1.0, 1.0, 1.0);
+    const voldata = VolumeMaker.createSphere(256, 256, 256, 64);
+    const myVol = graphics.createVolume(voldata, 256, 256, 256, 1.0, 1.0, 1.0);
 
-    // const mOrigin = mat4.fromTranslation(
-    //   mat4.create(),
-    //   vec3.fromValues(0, 0, 0)
-    // );
-    // scene.addSceneObject(myVol, mOrigin);
-    // const sceneRenderer = await graphics.createSimpleVolumeRenderer();
+    const mOrigin = mat4.fromTranslation(
+      mat4.create(),
+      vec3.fromValues(0, 0, 0)
+    );
+    scene.addSceneObject(myVol, mOrigin);
 
-    const m1 = mat4.fromTranslation(mat4.create(), vec3.fromValues(1, 0, 1));
-    scene.addSceneObject(myMesh, m1);
-    const m2 = mat4.fromTranslation(mat4.create(), vec3.fromValues(-1, 0, -1));
-    scene.addSceneObject(myMesh, m2);
-    const m3 = mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, 0));
-    scene.addSceneObject(myMesh, m3);
+    // const m1 = mat4.fromTranslation(mat4.create(), vec3.fromValues(1, 0, 1));
+    // scene.addSceneObject(myMesh, m1);
+    // const m2 = mat4.fromTranslation(mat4.create(), vec3.fromValues(-1, 0, -1));
+    // scene.addSceneObject(myMesh, m2);
+    // const m3 = mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, 0));
+    // scene.addSceneObject(myMesh, m3);
 
-    const sceneRenderer = await graphics.createDefaultRenderer();
+    // set up scene renderer
+
+    const sceneRenderer = await graphics.createSimpleVolumeRenderer();
+    // const sceneRenderer = await graphics.createDefaultRenderer();
 
     // infinite render loop.
+
     function renderloop() {
       renderTarget.swap();
       controller.update();
