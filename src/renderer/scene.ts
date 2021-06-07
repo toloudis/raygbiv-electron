@@ -7,9 +7,11 @@ import Shader from "./shader";
 
 class Scene {
   public objects: SceneObject[];
+  public volumes: SceneVolume[];
 
   constructor() {
     this.objects = [];
+    this.volumes = [];
   }
 
   public addSceneObject(mesh: Mesh | Volume, transform: mat4) {
@@ -17,7 +19,7 @@ class Scene {
     if (mesh instanceof Mesh) {
       this.objects.push(new SceneMesh(mesh, transform));
     } else if (mesh instanceof Volume) {
-      this.objects.push(new SceneVolume(mesh, transform));
+      this.volumes.push(new SceneVolume(mesh, transform));
     }
   }
 }

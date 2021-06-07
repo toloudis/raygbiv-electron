@@ -26,8 +26,9 @@ class Graphics implements IGraphics {
       await this.initWebGPU();
       console.log("WebGPU initialized.");
       console.log("ADAPTER:  " + this.adapter.name);
-      console.log("EXTENSIONS :  ");
-      this.adapter.extensions.forEach((ext) => console.log("    " + ext));
+      console.log("FEATURES :  ");
+
+      this.adapter.features.forEach((ext) => console.log("    " + ext));
     } catch (e) {
       console.error(e);
       this.initFallback();
