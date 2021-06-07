@@ -1,12 +1,6 @@
 import { IGraphics, ISceneRenderer, IRenderTarget } from "./api";
 import Mesh from "./mesh";
-import Shader from "./shader";
 
-// consider using readFileSync here to skip the fetch step in shader.ts
-import triangle_frag_spv from "./shaders/triangle.frag.spv";
-import triangle_vert_spv from "./shaders/triangle.vert.spv";
-import volume_frag_spv from "./shaders/volume.frag.spv";
-import volume_vert_spv from "./shaders/volume.vert.spv";
 import MyRenderer from "./renderer";
 import SimpleVolumeRenderer from "./simpleVolumeRenderer";
 import CanvasRenderTarget from "./canvasRenderTarget";

@@ -6,12 +6,8 @@ import Camera from "./camera";
 import Mesh from "./mesh";
 import Scene from "./scene";
 import { SceneObject, SceneMesh } from "./sceneObject";
-import Shader from "./shader";
+import { Shader, MeshShader } from "./shader";
 import CanvasRenderTarget from "./canvasRenderTarget";
-
-// consider using readFileSync here to skip the fetch step in shader.ts
-import triangle_frag_spv from "./shaders/triangle.frag.spv";
-import triangle_vert_spv from "./shaders/triangle.vert.spv";
 
 interface MySceneObjectUniforms {
   shaderuniformbindgroup: GPUBindGroup;
@@ -27,7 +23,7 @@ export default class MyRenderer implements ISceneRenderer {
   private commandEncoder: GPUCommandEncoder = null;
   private passEncoder: GPURenderPassEncoder = null;
 
-  private triangleShader: Shader = null;
+  private triangleShader: MeshShader = null;
   private triangleShaderPipeline: GPURenderPipeline = null;
 
   private gpuScene: Map<SceneObject, MySceneObjectUniforms>;
@@ -39,7 +35,7 @@ export default class MyRenderer implements ISceneRenderer {
   }
 
   async initPostCtor(): Promise<void> {
-    this.triangleShader = new Shader(triangle_vert_spv, triangle_frag_spv);
+    this.triangleShader = new MeshShader();
     await this.triangleShader.load(this.device);
     // Graphics Pipeline
 
@@ -182,44 +178,24 @@ export default class MyRenderer implements ISceneRenderer {
       let shadingInfo: MySceneObjectUniforms = this.gpuScene.get(object);
       if (!shadingInfo) {
         // stick this data into a gpu buffer
-        const uniformBuffer: GPUBuffer = this.triangleShader.createUniformBuffer(
-          new Float32Array([
-            // ♟️ ModelViewProjection Matrix
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
+        const uniformBuffer: GPUBuffer =
+          this.triangleShader.createUniformBuffer(
+            new Float32Array([
+              // ModelViewProjection Matrix
+              1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+              0.0, 0.0, 1.0,
 
-            // 🔴 Primary Color
-            0.9,
-            0.1,
-            0.3,
-            1.0,
+              // Primary Color
+              0.9, 0.1, 0.3, 1.0,
 
-            // 🟣 Accent Color
-            0.8,
-            0.2,
-            0.8,
-            1.0,
-          ])
-        );
+              // Accent Color
+              0.8, 0.2, 0.8, 1.0,
+            ])
+          );
 
         // attach this buffer to the shader
-        const shaderuniformbindgroup = this.triangleShader.createShaderBindGroup(
-          uniformBuffer
-        );
+        const shaderuniformbindgroup =
+          this.triangleShader.createShaderBindGroup(uniformBuffer);
 
         shadingInfo = {
           uniformBuffer,

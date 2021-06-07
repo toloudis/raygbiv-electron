@@ -6,12 +6,8 @@ import Camera from "./camera";
 import Mesh from "./mesh";
 import Scene from "./scene";
 import { SceneObject, SceneVolume } from "./sceneObject";
-import Shader from "./shader";
+import { VolumeShader, Shader } from "./shader";
 import CanvasRenderTarget from "./canvasRenderTarget";
-
-// consider using readFileSync here to skip the fetch step in shader.ts
-import volume_frag_spv from "./shaders/volume.frag.spv";
-import volume_vert_spv from "./shaders/volume.vert.spv";
 
 interface MySceneObjectUniforms {
   shaderuniformbindgroup: GPUBindGroup;
@@ -27,7 +23,7 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
   private commandEncoder: GPUCommandEncoder = null;
   private passEncoder: GPURenderPassEncoder = null;
 
-  private volumeShader: Shader = null;
+  private volumeShader: VolumeShader = null;
   private volumeShaderPipeline: GPURenderPipeline = null;
 
   private gpuScene: Map<SceneObject, MySceneObjectUniforms>;
@@ -39,7 +35,7 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
   }
 
   async initPostCtor(): Promise<void> {
-    this.volumeShader = new Shader(volume_vert_spv, volume_frag_spv);
+    this.volumeShader = new VolumeShader();
     await this.volumeShader.load(this.device);
     // Graphics Pipeline
 
@@ -174,48 +170,55 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
 
     // gpu update all uniform buffers for all objects to update camera
     for (let i = 0; i < scene.objects.length; ++i) {
-      const object: SceneVolume = scene.objects[i] as SceneVolume;
+      const object: SceneVolume = scene.volumes[i];
 
       let shadingInfo: MySceneObjectUniforms = this.gpuScene.get(object);
       if (!shadingInfo) {
         // stick this data into a gpu buffer
         const uniformBuffer: GPUBuffer = this.volumeShader.createUniformBuffer(
           new Float32Array([
-            // ♟️ ModelView Matrix
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
+            // ModelView Matrix
+            1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0,
 
-            // ♟️ Projection Matrix
+            // Projection Matrix
+            1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0,
+          ])
+        );
+        const uniformBuffer2: GPUBuffer = this.volumeShader.createUniformBuffer(
+          new Float32Array([
+            // mat4 inverseModelViewMatrix;
+            1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0,
+            // vec2 iResolution;
+            512, 512,
+            // float isPerspective;
+            1,
+            // float orthoScale;
             1.0,
+            // float GAMMA_MIN;
             0.0,
-            0.0,
-            0.0,
-            0.0,
+            // float GAMMA_MAX;
             1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
+            // float GAMMA_SCALE;
             1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
+            // float BRIGHTNESS;
             1.0,
+            // vec3 AABB_CLIP_MIN;
+            0.0, 0.0, 0.0,
+            // float dataRangeMin; // 0..1 (mapped from 0..uint16_max)
+            0.0,
+            // vec3 AABB_CLIP_MAX;
+            1.0, 1.0, 1.0,
+            // float dataRangeMax; // 0..1 (mapped from 0..uint16_max)
+            1.0,
+            // float maskAlpha;
+            1.0,
+            // float DENSITY;
+            1.0,
+            // int BREAK_STEPS;
+            256,
           ])
         );
 
@@ -224,7 +227,7 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
           uniformBuffer,
           volSampler,
           object.volume.getVolumeBufferView(),
-          uniformParamsBuffer
+          uniformBuffer2
         );
 
         shadingInfo = {

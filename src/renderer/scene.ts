@@ -3,7 +3,6 @@ import { mat4 } from "gl-matrix";
 import { SceneObject, SceneMesh, SceneVolume } from "./sceneObject";
 import Mesh from "./mesh";
 import Volume from "./volume";
-import Shader from "./shader";
 
 class Scene {
   public objects: SceneObject[];
