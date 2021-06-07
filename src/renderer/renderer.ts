@@ -141,14 +141,14 @@ export default class MyRenderer implements ISceneRenderer {
     const renderTarget = target as CanvasRenderTarget;
 
     // Write and submit commands to queue
-    const colorAttachment: GPURenderPassColorAttachmentDescriptor = {
-      attachment: renderTarget.getColorTextureView(),
+    const colorAttachment: GPURenderPassColorAttachment = {
+      view: renderTarget.getColorTextureView(),
       loadValue: { r: 0, g: 0, b: 0, a: 1 },
       storeOp: "store",
     };
 
-    const depthAttachment: GPURenderPassDepthStencilAttachmentDescriptor = {
-      attachment: renderTarget.getDepthTextureView(),
+    const depthAttachment: GPURenderPassDepthStencilAttachment = {
+      view: renderTarget.getDepthTextureView(),
       depthLoadValue: 1,
       depthStoreOp: "store",
       stencilLoadValue: "load",
