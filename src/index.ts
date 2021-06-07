@@ -47,34 +47,24 @@ graphics
       new Float32Array([1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0])
     );
 
-    const voldata = VolumeMaker.createSphere(256, 256, 256, 64);
-    const myVol = graphics.createVolume(voldata, 256, 256, 256, 1.0, 1.0, 1.0);
+    // const voldata = VolumeMaker.createSphere(256, 256, 256, 64);
+    // const myVol = graphics.createVolume(voldata, 256, 256, 256, 1.0, 1.0, 1.0);
 
-    //const shaderobj = myRenderer.triangleShader;
-
-    //uniformBuffer.setSubData(0, camera.getProjectionMatrix(), 0, )
-
-    // Graphics Pipeline
-
-    // const pipeline: GPURenderPipeline = myRenderer.createRenderPipeline(
-    //   shaderobj
+    // const mOrigin = mat4.fromTranslation(
+    //   mat4.create(),
+    //   vec3.fromValues(0, 0, 0)
     // );
+    // scene.addSceneObject(myVol, mOrigin);
+    // const sceneRenderer = await graphics.createSimpleVolumeRenderer();
 
-    const mOrigin = mat4.fromTranslation(
-      mat4.create(),
-      vec3.fromValues(0, 0, 0)
-    );
-    scene.addSceneObject(myVol, mOrigin);
-    const sceneRenderer = await graphics.createSimpleVolumeRenderer();
+    const m1 = mat4.fromTranslation(mat4.create(), vec3.fromValues(1, 0, 1));
+    scene.addSceneObject(myMesh, m1);
+    const m2 = mat4.fromTranslation(mat4.create(), vec3.fromValues(-1, 0, -1));
+    scene.addSceneObject(myMesh, m2);
+    const m3 = mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, 0));
+    scene.addSceneObject(myMesh, m3);
 
-    // const m1 = mat4.fromTranslation(mat4.create(), vec3.fromValues(1, 0, 1));
-    // scene.addSceneObject(myMesh, m1);
-    // const m2 = mat4.fromTranslation(mat4.create(), vec3.fromValues(-1, 0, -1));
-    // scene.addSceneObject(myMesh, m2);
-    // const m3 = mat4.fromTranslation(mat4.create(), vec3.fromValues(0, 0, 0));
-    // scene.addSceneObject(myMesh, m3);
-
-    // const sceneRenderer = await graphics.createDefaultRenderer();
+    const sceneRenderer = await graphics.createDefaultRenderer();
 
     // infinite render loop.
     function renderloop() {

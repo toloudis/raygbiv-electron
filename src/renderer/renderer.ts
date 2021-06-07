@@ -174,6 +174,9 @@ export default class MyRenderer implements ISceneRenderer {
     // gpu update all uniform buffers for all objects to update camera
     for (let i = 0; i < scene.objects.length; ++i) {
       const object: SceneObject = scene.objects[i];
+      if (!(object instanceof SceneMesh)) {
+        continue;
+      }
 
       let shadingInfo: MySceneObjectUniforms = this.gpuScene.get(object);
       if (!shadingInfo) {
@@ -249,6 +252,9 @@ export default class MyRenderer implements ISceneRenderer {
 
     for (let i = 0; i < scene.objects.length; ++i) {
       const object: SceneObject = scene.objects[i];
+      if (!(object instanceof SceneMesh)) {
+        continue;
+      }
       let shadingInfo: MySceneObjectUniforms = this.gpuScene.get(object);
 
       this.passEncoder.setPipeline(this.triangleShaderPipeline);

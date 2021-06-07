@@ -13,12 +13,12 @@ class Scene {
     this.volumes = [];
   }
 
-  public addSceneObject(mesh: Mesh | Volume, transform: mat4) {
+  public addSceneObject(obj: Mesh | Volume, transform: mat4) {
     // TODO Switch on type
-    if (mesh instanceof Mesh) {
-      this.objects.push(new SceneMesh(mesh, transform));
-    } else if (mesh instanceof Volume) {
-      this.volumes.push(new SceneVolume(mesh, transform));
+    if (obj instanceof Mesh) {
+      this.objects.push(new SceneMesh(obj, transform));
+    } else if (obj instanceof Volume) {
+      this.volumes.push(new SceneVolume(obj, transform));
     }
   }
 }

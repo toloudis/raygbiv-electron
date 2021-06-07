@@ -187,22 +187,6 @@ class MeshShader extends Shader {
           visibility: GPUShaderStage.VERTEX,
           buffer: { type: "uniform" as GPUBufferBindingType },
         },
-        {
-          binding: 1, // binding 0 for set 0 in the VS glsl is a uniform buffer
-          visibility: GPUShaderStage.FRAGMENT,
-          sampler: { type: "filtering" as GPUSamplerBindingType },
-        },
-        {
-          binding: 2, // binding 0 for set 0 in the VS glsl is a uniform buffer
-          visibility: GPUShaderStage.FRAGMENT,
-          texture: { sampleType: "float" as GPUTextureSampleType },
-          viewDimension: "3d" as GPUTextureViewDimension,
-        },
-        {
-          binding: 3, // binding 0 for set 0 in the VS glsl is a uniform buffer
-          visibility: GPUShaderStage.FRAGMENT,
-          buffer: { type: "uniform" as GPUBufferBindingType },
-        },
       ],
     });
     this.pipelineLayout = this.device.createPipelineLayout({
@@ -214,7 +198,7 @@ class MeshShader extends Shader {
 
   public createShaderBindGroup(uniformBuffer: GPUBuffer): GPUBindGroup {
     //  Bind Group
-    // ✍ This would be used when encoding commands
+    // This would be used when encoding commands
     return this.device.createBindGroup({
       layout: this.uniformBindGroupLayout,
       entries: [
@@ -328,7 +312,7 @@ class VolumeShader extends Shader {
     uniformParamsBuffer: GPUBuffer
   ): GPUBindGroup {
     //  Bind Group
-    // ✍ This would be used when encoding commands
+    // This would be used when encoding commands
     return this.device.createBindGroup({
       layout: this.uniformBindGroupLayout,
       entries: [
