@@ -23,14 +23,14 @@ class CanvasRenderTarget implements IRenderTarget {
     canvas.width = this.renderWidth;
     canvas.height = this.renderHeight;
 
-    const context: GPUCanvasContext = (canvas.getContext(
+    const context: GPUCanvasContext = canvas.getContext(
       "gpupresent"
-    ) as unknown) as GPUCanvasContext;
+    ) as unknown as GPUCanvasContext;
 
     // Create Swapchain
     const swapChainDesc: GPUSwapChainDescriptor = {
       device: this.device,
-      format: "bgra8unorm",
+      format: "bgra8unorm", //context.getSwapChainPreferredFormat(this.device.adapter),
       usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
     };
     this.swapchain = context.configureSwapChain(swapChainDesc);
