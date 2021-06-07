@@ -46,23 +46,23 @@ export default class Shader {
         {
           binding: 0, // binding 0 for set 0 in the VS glsl is a uniform buffer
           visibility: GPUShaderStage.VERTEX,
-          type: "uniform-buffer" as GPUBindingType,
+          buffer: { type: "uniform" as GPUBufferBindingType },
         },
         {
           binding: 1, // binding 0 for set 0 in the VS glsl is a uniform buffer
           visibility: GPUShaderStage.FRAGMENT,
-          type: "sampler" as GPUBindingType,
+          sampler: { type: "filtering" as GPUSamplerBindingType },
         },
         {
           binding: 2, // binding 0 for set 0 in the VS glsl is a uniform buffer
           visibility: GPUShaderStage.FRAGMENT,
-          type: "sampled-texture" as GPUBindingType,
+          texture: { sampleType: "float" as GPUTextureSampleType },
           viewDimension: "3d" as GPUTextureViewDimension,
         },
         {
           binding: 3, // binding 0 for set 0 in the VS glsl is a uniform buffer
           visibility: GPUShaderStage.FRAGMENT,
-          type: "uniform-buffer" as GPUBindingType,
+          buffer: { type: "uniform" as GPUBufferBindingType },
         },
       ],
     });
