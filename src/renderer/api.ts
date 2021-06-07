@@ -11,7 +11,7 @@ enum EPixelFormat {
 interface IRenderTarget {
   swap(): void;
   // block till rendering is done and return pixels data in a buffer
-  getPixels(): Float32Array;
+  getPixels(): Promise<ArrayBuffer>;
   setSize(w: number, h: number): void;
   getWidth(): number;
   getHeight(): number;

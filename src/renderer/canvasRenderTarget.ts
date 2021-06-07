@@ -18,23 +18,52 @@ class CanvasRenderTarget implements IRenderTarget {
     this.canvas = canvas;
     this.device = device;
 
-    this.renderWidth = canvas.clientWidth * window.devicePixelRatio;
-    this.renderHeight = canvas.clientHeight * window.devicePixelRatio;
-    canvas.width = this.renderWidth;
-    canvas.height = this.renderHeight;
+    this.setSize(
+      canvas.clientWidth * window.devicePixelRatio,
+      canvas.clientHeight * window.devicePixelRatio
+    );
 
-    const context: GPUCanvasContext = canvas.getContext(
+    ResizeObserverEntry;
+    // add a ResizeObserver for the canvas, to get the swap chain textures updated:
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.target !== this.canvas) {
+          continue;
+        }
+        this.setSize(
+          entry.contentBoxSize[0].inlineSize,
+          entry.contentBoxSize[0].blockSize
+        );
+      }
+    });
+    resizeObserver.observe(this.canvas);
+  }
+
+  setSize(w: number, h: number): void {
+    if (w === this.renderWidth && h === this.renderHeight) {
+      return;
+    }
+
+    this.renderWidth = w;
+    this.renderHeight = h;
+
+    this.canvas.width = this.renderWidth;
+    this.canvas.height = this.renderHeight;
+
+    const context: GPUCanvasContext = this.canvas.getContext(
       "gpupresent"
     ) as unknown as GPUCanvasContext;
 
-    // Create Swapchain
-    const swapChainDesc: GPUSwapChainDescriptor = {
+    this.swapchain = context.configureSwapChain({
       device: this.device,
       format: "bgra8unorm", //context.getSwapChainPreferredFormat(this.device.adapter),
       usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
-    };
-    this.swapchain = context.configureSwapChain(swapChainDesc);
-    console.log("Swap chain created");
+      // size: {
+      //   width: entry.contentBoxSize[0].inlineSize,
+      //   height: entry.contentBoxSize[0].blockSize,
+      // },
+    });
+    console.log("Canvas Swap chain configured");
 
     // Create Depth Backing
     const depthTextureDesc: GPUTextureDescriptor = {
@@ -55,11 +84,7 @@ class CanvasRenderTarget implements IRenderTarget {
 
     this.colorTexture = this.swapchain.getCurrentTexture();
     this.colorTextureView = this.colorTexture.createView();
-
-    console.log("Created swapchain texture images");
   }
-
-  setSize(w: number, h: number): void {}
 
   getWidth(): number {
     return this.renderWidth;
@@ -75,8 +100,29 @@ class CanvasRenderTarget implements IRenderTarget {
     this.colorTextureView = this.colorTexture.createView();
   }
 
-  getPixels(): Float32Array {
-    return new Float32Array();
+  async getPixels(): Promise<ArrayBuffer> {
+    const bufferSize = this.renderHeight * this.renderWidth * 4;
+    // create gpu buffer
+    const outBuffer = this.device.createBuffer({
+      size: bufferSize,
+      usage: 0,
+    });
+    const cmdenc = this.device.createCommandEncoder();
+    cmdenc.copyTextureToBuffer(
+      { texture: this.colorTexture },
+      { buffer: outBuffer },
+      { width: this.renderWidth, height: this.renderHeight }
+    );
+    this.device.queue.submit([cmdenc.finish()]);
+    // wait for completion?
+
+    await outBuffer.mapAsync(GPUMapMode.READ, 0, bufferSize);
+    const arraybuf = outBuffer.getMappedRange(); //0, buffersize);
+    outBuffer.unmap();
+    // destroy gpu buffer?
+    outBuffer.destroy();
+    // is arraybuf still valid?
+    return arraybuf;
   }
 
   getColorTextureView(): GPUTextureView {
