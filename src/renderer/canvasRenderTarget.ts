@@ -105,7 +105,7 @@ class CanvasRenderTarget implements IRenderTarget {
     // create gpu buffer
     const outBuffer = this.device.createBuffer({
       size: bufferSize,
-      usage: 0,
+      usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
     });
     const cmdenc = this.device.createCommandEncoder();
     cmdenc.copyTextureToBuffer(
