@@ -115,6 +115,7 @@ class CanvasRenderTarget implements IRenderTarget {
     );
     this.device.queue.submit([cmdenc.finish()]);
     // wait for completion?
+    await this.device.queue.onSubmittedWorkDone();
 
     await outBuffer.mapAsync(GPUMapMode.READ, 0, bufferSize);
     const arraybuf = outBuffer.getMappedRange(); //0, buffersize);
