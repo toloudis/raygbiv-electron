@@ -1,10 +1,10 @@
 import { mypad } from "./bufferUtil";
 
 // consider using readFileSync here to skip the fetch step
-import triangle_frag_spv from "./shaders/triangle.frag.spv";
-import triangle_vert_spv from "./shaders/triangle.vert.spv";
-import volume_frag_spv from "./shaders/volume.frag.spv";
-import volume_vert_spv from "./shaders/volume.vert.spv";
+import * as triangle_frag_spv from "./shaders/triangle.frag.spv";
+import * as triangle_vert_spv from "./shaders/triangle.vert.spv";
+import * as volume_frag_spv from "./shaders/volume.frag.spv";
+import * as volume_vert_spv from "./shaders/volume.vert.spv";
 
 class Shader {
   protected vspath = "";
@@ -170,7 +170,10 @@ class Shader {
 
 class MeshShader extends Shader {
   constructor() {
-    super(triangle_vert_spv, triangle_frag_spv);
+    super(
+      triangle_vert_spv as unknown as string,
+      triangle_frag_spv as unknown as string
+    );
   }
 
   public async load(device: GPUDevice): Promise<void> {
@@ -263,7 +266,10 @@ class MeshShader extends Shader {
 
 class VolumeShader extends Shader {
   constructor() {
-    super(volume_vert_spv, volume_frag_spv);
+    super(
+      volume_vert_spv as unknown as string,
+      volume_frag_spv as unknown as string
+    );
   }
 
   public async load(device: GPUDevice): Promise<void> {
