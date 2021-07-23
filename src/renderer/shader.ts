@@ -67,8 +67,10 @@ class Shader {
         {
           binding: 2, // binding 0 for set 0 in the VS glsl is a uniform buffer
           visibility: GPUShaderStage.FRAGMENT,
-          texture: { sampleType: "float" as GPUTextureSampleType },
-          viewDimension: "3d" as GPUTextureViewDimension,
+          texture: {
+            sampleType: "float" as GPUTextureSampleType,
+            viewDimension: "3d" as GPUTextureViewDimension,
+          },
         },
         {
           binding: 3, // binding 0 for set 0 in the VS glsl is a uniform buffer
@@ -288,8 +290,10 @@ class VolumeShader extends Shader {
         {
           binding: 2, // binding 0 for set 0 in the VS glsl is a uniform buffer
           visibility: GPUShaderStage.FRAGMENT,
-          texture: { sampleType: "float" as GPUTextureSampleType },
-          viewDimension: "3d" as GPUTextureViewDimension,
+          texture: {
+            sampleType: "float" as GPUTextureSampleType,
+            viewDimension: "3d" as GPUTextureViewDimension,
+          },
         },
         {
           binding: 3, // binding 0 for set 0 in the VS glsl is a uniform buffer

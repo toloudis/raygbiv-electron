@@ -3,7 +3,7 @@ import { IRenderTarget } from "./api";
 class CanvasRenderTarget implements IRenderTarget {
   private canvas: HTMLCanvasElement = null;
   private device: GPUDevice = null;
-  private swapchain: GPUSwapChain = null;
+  private context: GPUPresentationContext = null;
 
   private depthTexture: GPUTexture = null;
   private depthTextureView: GPUTextureView = null;
@@ -23,19 +23,20 @@ class CanvasRenderTarget implements IRenderTarget {
       canvas.clientHeight * window.devicePixelRatio
     );
 
-    ResizeObserverEntry;
     // add a ResizeObserver for the canvas, to get the swap chain textures updated:
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.target !== this.canvas) {
-          continue;
+    const resizeObserver = new ResizeObserver(
+      (entries: ResizeObserverEntry[]) => {
+        for (const entry of entries) {
+          if (entry.target !== this.canvas) {
+            continue;
+          }
+          this.setSize(
+            entry.contentBoxSize[0].inlineSize,
+            entry.contentBoxSize[0].blockSize
+          );
         }
-        this.setSize(
-          entry.contentBoxSize[0].inlineSize,
-          entry.contentBoxSize[0].blockSize
-        );
       }
-    });
+    );
     resizeObserver.observe(this.canvas);
   }
 
@@ -50,11 +51,11 @@ class CanvasRenderTarget implements IRenderTarget {
     this.canvas.width = this.renderWidth;
     this.canvas.height = this.renderHeight;
 
-    const context: GPUCanvasContext = this.canvas.getContext(
+    this.context = this.canvas.getContext(
       "gpupresent"
-    ) as unknown as GPUCanvasContext;
+    ) as unknown as GPUPresentationContext;
 
-    this.swapchain = context.configureSwapChain({
+    this.context.configure({
       device: this.device,
       format: "bgra8unorm", //context.getSwapChainPreferredFormat(this.device.adapter),
       usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
@@ -82,7 +83,7 @@ class CanvasRenderTarget implements IRenderTarget {
     this.depthTexture = this.device.createTexture(depthTextureDesc);
     this.depthTextureView = this.depthTexture.createView();
 
-    this.colorTexture = this.swapchain.getCurrentTexture();
+    this.colorTexture = this.context.getCurrentTexture();
     this.colorTextureView = this.colorTexture.createView();
   }
 
@@ -96,7 +97,7 @@ class CanvasRenderTarget implements IRenderTarget {
 
   swap(): void {
     // Acquire next image from swapchain
-    this.colorTexture = this.swapchain.getCurrentTexture();
+    this.colorTexture = this.context.getCurrentTexture();
     this.colorTextureView = this.colorTexture.createView();
   }
 
