@@ -50,40 +50,6 @@ class Shader {
     // javascript source.
 
     await this.loadModules();
-
-    // Bind Group Layout
-    this.uniformBindGroupLayout = this.device.createBindGroupLayout({
-      entries: [
-        {
-          binding: 0, // binding 0 for set 0 in the VS glsl is a uniform buffer
-          visibility: GPUShaderStage.VERTEX,
-          buffer: { type: "uniform" as GPUBufferBindingType },
-        },
-        {
-          binding: 1, // binding 0 for set 0 in the VS glsl is a uniform buffer
-          visibility: GPUShaderStage.FRAGMENT,
-          sampler: { type: "filtering" as GPUSamplerBindingType },
-        },
-        {
-          binding: 2, // binding 0 for set 0 in the VS glsl is a uniform buffer
-          visibility: GPUShaderStage.FRAGMENT,
-          texture: {
-            sampleType: "float" as GPUTextureSampleType,
-            viewDimension: "3d" as GPUTextureViewDimension,
-          },
-        },
-        {
-          binding: 3, // binding 0 for set 0 in the VS glsl is a uniform buffer
-          visibility: GPUShaderStage.FRAGMENT,
-          buffer: { type: "uniform" as GPUBufferBindingType },
-        },
-      ],
-    });
-    this.pipelineLayout = this.device.createPipelineLayout({
-      // order here set number from the glsl
-      bindGroupLayouts: [this.uniformBindGroupLayout],
-    });
-    console.log("pipeline and uniform group layouts created");
   }
 
   public createUniformBuffer(uniformData: Float32Array): GPUBuffer {

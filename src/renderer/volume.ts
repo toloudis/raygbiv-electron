@@ -25,15 +25,7 @@ export default class Volume {
       z,
       GPUTextureUsage.SAMPLED
     );
-    this.volumeBufferView = this.volumeBuffer.createView({
-      //format?: GPUTextureFormat;
-      dimension: "3d" as GPUTextureViewDimension,
-      //aspect?: GPUTextureAspect;
-      //baseArrayLayer?: number;
-      //baseMipLevel?: number;
-      //arrayLayerCount?: number;
-      //mipLevelCount?: number;
-    });
+    this.volumeBufferView = this.volumeBuffer.createView();
 
     // Helper function for creating GPUBuffer(s) out of Typed Arrays
     const createBuffer = (arr: Float32Array | Uint16Array, usage: number) => {

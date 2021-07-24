@@ -52,7 +52,7 @@ class CanvasRenderTarget implements IRenderTarget {
     this.canvas.height = this.renderHeight;
 
     this.context = this.canvas.getContext(
-      "gpupresent"
+      "webgpu"
     ) as unknown as GPUPresentationContext;
 
     this.context.configure({
