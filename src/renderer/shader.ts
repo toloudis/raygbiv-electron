@@ -167,6 +167,10 @@ class MeshShader extends Shader {
     console.log("pipeline and uniform group layouts created");
   }
 
+  // this (and the underlying uniform buffer) is per-thing being drawn with this shader.
+  // after this is created once per object, you can just update the uniform buffer.
+  // if it's a texture binding that changes, then you have to re-create a bind group
+  // if it needs to e.g. ping-pong then you can just create 2 separate bind groups, one for each texture.
   public createShaderBindGroup(uniformBuffer: GPUBuffer): GPUBindGroup {
     //  Bind Group
     // This would be used when encoding commands

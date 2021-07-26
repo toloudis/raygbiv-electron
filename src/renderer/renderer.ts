@@ -19,7 +19,7 @@ export default class MyRenderer implements ISceneRenderer {
 
   private queue: GPUQueue = null;
 
-  // ✋ Declare command handles
+  // Declare command handles
   private commandEncoder: GPUCommandEncoder = null;
   private passEncoder: GPURenderPassEncoder = null;
 
