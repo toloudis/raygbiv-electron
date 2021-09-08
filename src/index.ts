@@ -65,8 +65,8 @@ graphics
 
     // set up scene renderer
 
-    //const sceneRenderer = await graphics.createSimpleVolumeRenderer();
-    const sceneRenderer = await graphics.createDefaultRenderer();
+    const sceneRenderer = await graphics.createSimpleVolumeRenderer();
+    //const sceneRenderer = await graphics.createDefaultRenderer();
 
     // infinite render loop.
 

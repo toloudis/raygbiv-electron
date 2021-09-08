@@ -1,9 +1,8 @@
-import { mat4 } from "gl-matrix";
+import { mat4, glMatrix } from "gl-matrix";
 
 import { IRenderTarget, ISceneRenderer } from "./api";
 import { mypad } from "./bufferUtil";
 import Camera from "./camera";
-import Mesh from "./mesh";
 import Scene from "./scene";
 import { SceneObject, SceneVolume } from "./sceneObject";
 import { VolumeShader, Shader } from "./shader";
@@ -40,15 +39,6 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
     // Graphics Pipeline
 
     this.volumeShaderPipeline = this.createRenderPipeline(this.volumeShader);
-  }
-
-  createMesh(
-    vertices: Float32Array,
-    normals: Float32Array | null,
-    colors: Float32Array | null,
-    indices: Uint16Array
-  ): Mesh {
-    return new Mesh(this.device, vertices, normals, colors, indices);
   }
 
   // Helper function for creating GPUBuffer(s) out of Typed Arrays
@@ -120,15 +110,6 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
   // Write commands to send to the GPU
   encodeCommands(camera: Camera): void {}
 
-  // render(camera: Camera): void {
-  //   // Acquire next image from swapchain
-  //   this.colorTexture = this.swapchain.getCurrentTexture();
-  //   this.colorTextureView = this.colorTexture.createView();
-
-  //   // Write and submit commands to queue
-  //   this.encodeCommands(camera);
-  // }
-
   render(
     target: IRenderTarget,
     camera: Camera,
@@ -169,58 +150,69 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
     );
 
     // gpu update all uniform buffers for all objects to update camera
-    for (let i = 0; i < scene.objects.length; ++i) {
-      const object: SceneVolume = scene.volumes[i];
+    for (let i = 0; i < scene.volumes.length; ++i) {
+      const object: SceneObject = scene.volumes[i];
+      // only handle volumes here
+      if (!(object instanceof SceneVolume)) {
+        continue;
+      }
+      const viewModel = mat4.mul(
+        mat4.create(),
+        camera.getViewMatrix(),
+        object.getTransform()
+      );
+      const viewModelInv = mat4.invert(mat4.create(), viewModel);
 
       let shadingInfo: MySceneObjectUniforms = this.gpuScene.get(object);
       if (!shadingInfo) {
         // stick this data into a gpu buffer
-        const uniformBuffer: GPUBuffer = this.volumeShader.createUniformBuffer(
-          new Float32Array([
-            // ModelView Matrix
-            1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 1.0,
+        const data = new Float32Array(16 * 2);
+        // ModelView Matrix
+        data.set(viewModel);
+        // Projection Matrix
+        data.set(camera.getProjectionMatrix(), 16);
 
-            // Projection Matrix
-            1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 1.0,
-          ])
-        );
-        const uniformBuffer2: GPUBuffer = this.volumeShader.createUniformBuffer(
-          new Float32Array([
-            // mat4 inverseModelViewMatrix;
-            1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 1.0,
-            // vec2 iResolution;
-            512, 512,
-            // float isPerspective;
-            1,
-            // float orthoScale;
-            1.0,
-            // float GAMMA_MIN;
-            0.0,
-            // float GAMMA_MAX;
-            1.0,
-            // float GAMMA_SCALE;
-            1.0,
-            // float BRIGHTNESS;
-            1.0,
-            // vec3 AABB_CLIP_MIN;
-            0.0, 0.0, 0.0,
-            // float dataRangeMin; // 0..1 (mapped from 0..uint16_max)
-            0.0,
-            // vec3 AABB_CLIP_MAX;
-            1.0, 1.0, 1.0,
-            // float dataRangeMax; // 0..1 (mapped from 0..uint16_max)
-            1.0,
-            // float maskAlpha;
-            1.0,
-            // float DENSITY;
-            1.0,
-            // int BREAK_STEPS;
-            256,
-          ])
-        );
+        const uniformBuffer: GPUBuffer =
+          this.volumeShader.createUniformBuffer(data);
+
+        const data2 = new Float32Array(35);
+        data2.set([
+          // mat4 inverseModelViewMatrix;
+          1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
+          // vec2 iResolution;
+          512, 512,
+          // float isPerspective;
+          1,
+          // float orthoScale;
+          1.0,
+          // float GAMMA_MIN;
+          0.0,
+          // float GAMMA_MAX;
+          1.0,
+          // float GAMMA_SCALE;
+          1.0,
+          // float BRIGHTNESS;
+          1.0,
+          // vec3 AABB_CLIP_MIN;
+          0.0, 0.0, 0.0,
+          // float dataRangeMin; // 0..1 (mapped from 0..uint16_max)
+          0.0,
+          // vec3 AABB_CLIP_MAX;
+          1.0, 1.0, 1.0,
+          // float dataRangeMax; // 0..1 (mapped from 0..uint16_max)
+          1.0,
+          // float maskAlpha;
+          1.0,
+          // float DENSITY;
+          1.0,
+          // int BREAK_STEPS;
+          256,
+        ]);
+        data2.set(viewModelInv);
+        console.log(data);
+        console.log(data2);
+        const uniformBuffer2: GPUBuffer =
+          this.volumeShader.createUniformBuffer(data2);
 
         // create sampler:
         const volSampler: GPUSampler = this.device.createSampler({
@@ -247,29 +239,29 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
       }
 
       // apply the model transform
-      const projViewModel = mat4.mul(
-        mat4.create(),
-        projView,
-        object.getTransform()
-      );
-      // TODO don't create this every time?
-      const upload = this.device.createBuffer({
-        size: 16 * 4,
-        usage: GPUBufferUsage.COPY_SRC,
-        mappedAtCreation: true,
-      });
-      const mapping = upload.getMappedRange(0, 16 * 4);
+      // const projViewModel = mat4.mul(
+      //   mat4.create(),
+      //   projView,
+      //   object.getTransform()
+      // );
+      // // TODO don't create this every time?
+      // const upload = this.device.createBuffer({
+      //   size: 16 * 4,
+      //   usage: GPUBufferUsage.COPY_SRC,
+      //   mappedAtCreation: true,
+      // });
+      // const mapping = upload.getMappedRange(0, 16 * 4);
 
-      new Float32Array(mapping).set(projViewModel);
-      upload.unmap();
+      // new Float32Array(mapping).set(projViewModel);
+      // upload.unmap();
 
-      this.commandEncoder.copyBufferToBuffer(
-        upload,
-        0,
-        shadingInfo.uniformBuffer,
-        0,
-        16 * 4
-      );
+      // this.commandEncoder.copyBufferToBuffer(
+      //   upload,
+      //   0,
+      //   shadingInfo.uniformBuffer,
+      //   0,
+      //   16 * 4
+      // );
     }
 
     // renderpassdesc describes the framebuffer we are rendering to
@@ -289,8 +281,13 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
       renderTarget.getHeight()
     );
 
-    for (let i = 0; i < scene.objects.length; ++i) {
-      const object: SceneVolume = scene.objects[i] as SceneVolume;
+    for (let i = 0; i < scene.volumes.length; ++i) {
+      const object: SceneObject = scene.volumes[i];
+      // only handle volumes here
+      if (!(object instanceof SceneVolume)) {
+        continue;
+      }
+
       let shadingInfo: MySceneObjectUniforms = this.gpuScene.get(object);
 
       this.passEncoder.setPipeline(this.volumeShaderPipeline);

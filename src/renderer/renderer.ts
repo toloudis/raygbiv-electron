@@ -44,15 +44,6 @@ export default class MyRenderer implements ISceneRenderer {
     );
   }
 
-  createMesh(
-    vertices: Float32Array,
-    normals: Float32Array | null,
-    colors: Float32Array | null,
-    indices: Uint16Array
-  ): Mesh {
-    return new Mesh(this.device, vertices, normals, colors, indices);
-  }
-
   // Helper function for creating GPUBuffer(s) out of Typed Arrays
   createBuffer(arr: Float32Array | Uint16Array, usage: number): GPUBuffer {
     const paddedBufferSize = mypad(arr.byteLength);
@@ -174,6 +165,7 @@ export default class MyRenderer implements ISceneRenderer {
     // gpu update all uniform buffers for all objects to update camera
     for (let i = 0; i < scene.objects.length; ++i) {
       const object: SceneObject = scene.objects[i];
+      // only handle meshes here
       if (!(object instanceof SceneMesh)) {
         continue;
       }
@@ -252,6 +244,7 @@ export default class MyRenderer implements ISceneRenderer {
 
     for (let i = 0; i < scene.objects.length; ++i) {
       const object: SceneObject = scene.objects[i];
+      // only handle meshes here
       if (!(object instanceof SceneMesh)) {
         continue;
       }
