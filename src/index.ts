@@ -1,5 +1,3 @@
-import * as WEBGPU from "@webgpu/types";
-
 import { vec3, mat4 } from "gl-matrix";
 
 import MyRenderer from "./renderer/renderer";
@@ -46,9 +44,8 @@ myRenderer.begin().then(() => {
 
   // Graphics Pipeline
 
-  const pipeline: GPURenderPipeline = myRenderer.createRenderPipeline(
-    shaderobj
-  );
+  const pipeline: GPURenderPipeline =
+    myRenderer.createRenderPipeline(shaderobj);
 
   const m1 = mat4.fromTranslation(mat4.create(), vec3.fromValues(1, 0, 1));
   myRenderer.addSceneObject(pipeline, myMesh, shaderobj, m1);

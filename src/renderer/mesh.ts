@@ -1,7 +1,4 @@
-// pad to a multiple of 4
-function mypad(x: number): number {
-  return x % 4 ? x + (4 - (x % 4)) : x;
-}
+import { createGPUBuffer } from "./bufferUtil";
 
 export default class Mesh {
   private positionBuffer: GPUBuffer = null;
@@ -15,30 +12,13 @@ export default class Mesh {
     colors: Float32Array | null,
     indices: Uint16Array
   ) {
-    // Helper function for creating GPUBuffer(s) out of Typed Arrays
-    const createBuffer = (arr: Float32Array | Uint16Array, usage: number) => {
-      const desc = {
-        size: mypad(arr.byteLength),
-        usage,
-        mappedAtCreation: true,
-      };
-      console.log("create mesh buffer " + arr.byteLength);
-      // @ts-ignore TS2339
-      const [buffer, bufferMapped] = device.createBufferMapped(desc);
-      //const bufferMapped = buffer.getMappedRange(0, arr.byteLength);
-
-      const writeArray =
-        arr instanceof Uint16Array
-          ? new Uint16Array(bufferMapped)
-          : new Float32Array(bufferMapped);
-      writeArray.set(arr);
-      buffer.unmap();
-      return buffer;
-    };
-
-    this.positionBuffer = createBuffer(vertices, GPUBufferUsage.VERTEX);
-    this.colorBuffer = createBuffer(colors, GPUBufferUsage.VERTEX);
-    this.indexBuffer = createBuffer(indices, GPUBufferUsage.INDEX);
+    this.positionBuffer = createGPUBuffer(
+      vertices,
+      GPUBufferUsage.VERTEX,
+      device
+    );
+    this.colorBuffer = createGPUBuffer(colors, GPUBufferUsage.VERTEX, device);
+    this.indexBuffer = createGPUBuffer(indices, GPUBufferUsage.INDEX, device);
   }
 
   getPositionBuffer(): GPUBuffer {

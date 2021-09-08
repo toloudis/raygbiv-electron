@@ -46,19 +46,20 @@ export async function createTextureFromImage(
     size: {
       width: img.width,
       height: img.height,
-      depth: 1,
     },
     format: "rgba8unorm",
     usage: GPUTextureUsage.COPY_DST | usage,
   });
 
-  // @ts-ignore TS2339
-  const [textureDataBuffer, mapping] = device.createBufferMapped({
+  const textureDataBuffer = device.createBuffer({
     size: data.byteLength, // TODO PAD TO 4 bytes
     usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
     mappedAtCreation: true,
   });
-  //const mapping = textureDataBuffer.getMappedRange(0, data.byteLength);
+  const mapping = textureDataBuffer.getMappedRange(
+    0,
+    data.byteLength /* TODO PAD TO 4 bytes */
+  );
   new Uint8Array(mapping).set(data);
   textureDataBuffer.unmap();
 
@@ -74,11 +75,10 @@ export async function createTextureFromImage(
     {
       width: img.width,
       height: img.height,
-      depth: 1,
     }
   );
 
-  device.defaultQueue.submit([commandEncoder.finish()]);
+  device.queue.submit([commandEncoder.finish()]);
   textureDataBuffer.destroy();
 
   return texture;

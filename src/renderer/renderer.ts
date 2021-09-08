@@ -1,5 +1,6 @@
 import { mat4 } from "gl-matrix";
 
+import { createGPUBuffer } from "./bufferUtil";
 import Camera from "./camera";
 import Mesh from "./mesh";
 import Shader from "./shader";
@@ -24,7 +25,7 @@ export default class MyRenderer {
   private queue: GPUQueue = null;
 
   private canvas: HTMLCanvasElement = null;
-  private swapchain: GPUSwapChain = null;
+  private context: GPUCanvasContext = null;
 
   private depthTexture: GPUTexture = null;
   private depthTextureView: GPUTextureView = null;
@@ -55,9 +56,11 @@ export default class MyRenderer {
       }
       await this.initWebGPU();
       console.log("WebGPU initialized.");
-      console.log("ADAPTER:  " + this.adapter.name);
-      console.log("EXTENSIONS :  ");
-      this.adapter.extensions.forEach((ext) => console.log("    " + ext));
+      console.log("ADAPTER  :  " + this.adapter.name);
+      console.log("FEATURES :  ");
+      this.adapter.features.forEach((f) => console.log("    " + f));
+      console.log("LIMITS   :");
+      console.log(this.adapter.limits);
 
       await this.loadAllShaders();
     } catch (e) {
@@ -69,7 +72,7 @@ export default class MyRenderer {
   async initWebGPU(): Promise<void> {
     await this.ensureDevice();
     // ... Upload resources, etc.
-    this.queue = this.device.defaultQueue;
+    this.queue = this.device.queue;
   }
 
   initFallback(): void {
@@ -137,38 +140,34 @@ export default class MyRenderer {
     canvas.width = this.renderWidth;
     canvas.height = this.renderHeight;
 
-    const context: GPUCanvasContext = (canvas.getContext(
-      "gpupresent"
-    ) as unknown) as GPUCanvasContext;
+    this.context = canvas.getContext("webgpu") as unknown as GPUCanvasContext;
 
     // Create Swapchain
-    const swapChainDesc: GPUSwapChainDescriptor = {
+    const swapChainDesc: GPUCanvasConfiguration = {
       device: this.device,
       format: "bgra8unorm",
-      usage: GPUTextureUsage.OUTPUT_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+      usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
     };
-    this.swapchain = context.configureSwapChain(swapChainDesc);
-    console.log("Swap chain created");
+    this.context.configure(swapChainDesc);
+    console.log("GPU Canvas configured");
 
     // Create Depth Backing
     const depthTextureDesc: GPUTextureDescriptor = {
       size: {
         width: this.renderWidth,
         height: this.renderHeight,
-        depth: 1,
       },
-      // arrayLayerCount: 1,
       mipLevelCount: 1,
       sampleCount: 1,
       dimension: "2d",
       format: "depth24plus-stencil8",
-      usage: GPUTextureUsage.OUTPUT_ATTACHMENT | GPUTextureUsage.COPY_SRC,
+      usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
     };
 
     this.depthTexture = this.device.createTexture(depthTextureDesc);
     this.depthTextureView = this.depthTexture.createView();
 
-    this.colorTexture = this.swapchain.getCurrentTexture();
+    this.colorTexture = this.context.getCurrentTexture();
     this.colorTextureView = this.colorTexture.createView();
 
     console.log("Created swapchain texture images");
@@ -190,83 +189,66 @@ export default class MyRenderer {
     await this.volumeShader.load(this.device);
   }
 
-  // Helper function for creating GPUBuffer(s) out of Typed Arrays
-  createBuffer(arr: Float32Array | Uint16Array, usage: number): GPUBuffer {
-    const desc = { size: arr.byteLength, usage, mappedAtCreation: true };
-    console.log("CreateBuffer Mapped " + arr.byteLength);
-    // @ts-ignore TS2339
-    const [buffer, bufferMapped] = this.device.createBufferMapped(desc);
-    //const bufferMapped = buffer.getMappedRange(0, arr.byteLength);
-
-    const writeArray =
-      arr instanceof Uint16Array
-        ? new Uint16Array(bufferMapped)
-        : new Float32Array(bufferMapped);
-    writeArray.set(arr);
-    buffer.unmap();
-    return buffer;
-  }
-
   createRenderPipeline(shaderobj: Shader): GPURenderPipeline {
     // Input Assembly
     const vertexState = shaderobj.getVertexStateDesc();
 
     // Depth/Stencil State
-    const depthStencilState: GPUDepthStencilStateDescriptor = {
+    const depthStencilState: GPUDepthStencilState = {
       depthWriteEnabled: true,
       depthCompare: "less",
       format: "depth24plus-stencil8",
     };
 
     // Blend State
-    const colorState: GPUColorStateDescriptor = {
+    const colorState: GPUColorTargetState = {
       format: "bgra8unorm",
-      alphaBlend: {
-        srcFactor: "src-alpha",
-        dstFactor: "one-minus-src-alpha",
-        operation: "add",
-      },
-      colorBlend: {
-        srcFactor: "src-alpha",
-        dstFactor: "one-minus-src-alpha",
-        operation: "add",
+      blend: {
+        color: {
+          srcFactor: "src-alpha",
+          dstFactor: "one-minus-src-alpha",
+          operation: "add",
+        },
+        alpha: {
+          srcFactor: "src-alpha",
+          dstFactor: "one-minus-src-alpha",
+          operation: "add",
+        },
       },
       writeMask: GPUColorWrite.ALL,
     };
 
     // Rasterization
-    const rasterizationState: GPURasterizationStateDescriptor = {
+    const rasterizationState: GPUPrimitiveState = {
       frontFace: "cw",
       cullMode: "none",
+      topology: "triangle-list",
     };
 
     // Create the Pipeline
     const pipelineDesc: GPURenderPipelineDescriptor = {
       layout: shaderobj.getPipelineLayout(),
 
-      vertexStage: shaderobj.getVertexStage(),
-      fragmentStage: shaderobj.getFragmentStage(),
-
-      primitiveTopology: "triangle-list",
+      vertex: shaderobj.getVertexStage(),
       // array of "output" slots
-      colorStates: [colorState],
-      depthStencilState,
-      vertexState,
-      rasterizationState,
+      fragment: { ...shaderobj.getFragmentStage(), targets: [colorState] },
+
+      depthStencil: depthStencilState,
+      primitive: rasterizationState,
     };
     return this.device.createRenderPipeline(pipelineDesc);
   }
 
   // Write commands to send to the GPU
   encodeCommands(camera: Camera): void {
-    const colorAttachment: GPURenderPassColorAttachmentDescriptor = {
-      attachment: this.colorTextureView,
+    const colorAttachment: GPURenderPassColorAttachment = {
+      view: this.colorTextureView,
       loadValue: { r: 0, g: 0, b: 0, a: 1 },
       storeOp: "store",
     };
 
-    const depthAttachment: GPURenderPassDepthStencilAttachmentDescriptor = {
-      attachment: this.depthTextureView,
+    const depthAttachment: GPURenderPassDepthStencilAttachment = {
+      view: this.depthTextureView,
       depthLoadValue: 1,
       depthStoreOp: "store",
       stencilLoadValue: "load",
@@ -298,14 +280,12 @@ export default class MyRenderer {
         this.scene[i].transform
       );
       // TODO don't create this every time?
-      // @ts-ignore TS2339
-      const [upload, mapping] = this.device.createBufferMapped({
+      const upload = this.device.createBuffer({
         size: 16 * 4,
         usage: GPUBufferUsage.COPY_SRC,
         mappedAtCreation: true,
       });
-      //const mapping = upload.getMappedRange(0, 16 * 4);
-
+      const mapping = upload.getMappedRange(0, 16 * 4);
       new Float32Array(mapping).set(projViewModel);
       upload.unmap();
 
@@ -338,7 +318,10 @@ export default class MyRenderer {
         this.scene[i].mesh.getPositionBuffer()
       );
       this.passEncoder.setVertexBuffer(1, this.scene[i].mesh.getColorBuffer());
-      this.passEncoder.setIndexBuffer(this.scene[i].mesh.getIndexBuffer());
+      this.passEncoder.setIndexBuffer(
+        this.scene[i].mesh.getIndexBuffer(),
+        "uint16"
+      );
       this.passEncoder.drawIndexed(3, 1, 0, 0, 0);
     }
     this.passEncoder.endPass();
@@ -348,7 +331,7 @@ export default class MyRenderer {
 
   render(camera: Camera): void {
     // Acquire next image from swapchain
-    this.colorTexture = this.swapchain.getCurrentTexture();
+    this.colorTexture = this.context.getCurrentTexture();
     this.colorTextureView = this.colorTexture.createView();
 
     // Write and submit commands to queue
@@ -363,45 +346,25 @@ export default class MyRenderer {
   ): void {
     const uniformData = new Float32Array([
       // ♟️ ModelViewProjection Matrix
-      1.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      1.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
-      1.0,
-      0.0,
-      0.0,
-      0.0,
-      0.0,
+      1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
       1.0,
 
       // 🔴 Primary Color
-      0.9,
-      0.1,
-      0.3,
-      1.0,
+      0.9, 0.1, 0.3, 1.0,
 
       // 🟣 Accent Color
-      0.8,
-      0.2,
-      0.8,
-      1.0,
+      0.8, 0.2, 0.8, 1.0,
     ]);
 
     // stick this data into a gpu buffer
-    const uniformBuffer: GPUBuffer = this.createBuffer(
+    const uniformBuffer: GPUBuffer = createGPUBuffer(
       uniformData,
-      GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+      GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+      this.device
     );
     // attach this buffer to the shader
-    const shaderuniformbindgroup = shaderobj.createShaderBindGroup(
-      uniformBuffer
-    );
+    const shaderuniformbindgroup =
+      shaderobj.createShaderBindGroup(uniformBuffer);
 
     this.scene.push({
       pipeline,

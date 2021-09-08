@@ -58,4 +58,40 @@ module.exports = [
       }),
     ],
   },
+  {
+    mode: "development",
+    entry: "./src/index.ts",
+    target: "web",
+    devtool: "source-map",
+    resolve: {
+      extensions: [".ts", ".tsx", ".js"],
+    },
+    module: {
+      rules: [
+        {
+          test: /\.ts(x?)$/,
+          include: /src/,
+          use: [{ loader: "ts-loader" }],
+          exclude: /node_modules/,
+        },
+        {
+          test: /\.spv$/i,
+          use: [
+            {
+              loader: "file-loader",
+            },
+          ],
+        },
+      ],
+    },
+    output: {
+      path: __dirname + "/dist",
+      filename: "index.js",
+    },
+    plugins: [
+      new HtmlWebpackPlugin({
+        template: "./src/index.html",
+      }),
+    ],
+  },
 ];

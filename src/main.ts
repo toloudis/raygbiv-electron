@@ -15,6 +15,10 @@ function createWindow() {
 
   // Open the DevTools.
   win.webContents.openDevTools();
+
+  console.log(process.versions.node);
+  console.log(process.versions.chrome);
+  console.log(process.versions.electron);
 }
 
 ////////////////////////////////////////////////////
