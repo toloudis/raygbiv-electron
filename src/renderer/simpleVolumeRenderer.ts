@@ -1,7 +1,6 @@
 import { mat4, glMatrix } from "gl-matrix";
 
 import { IRenderTarget, ISceneRenderer } from "./api";
-import { mypad } from "./bufferUtil";
 import Camera from "./camera";
 import Scene from "./scene";
 import { SceneObject, SceneVolume } from "./sceneObject";
@@ -39,23 +38,6 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
     // Graphics Pipeline
 
     this.volumeShaderPipeline = this.createRenderPipeline(this.volumeShader);
-  }
-
-  // Helper function for creating GPUBuffer(s) out of Typed Arrays
-  createBuffer(arr: Float32Array | Uint16Array, usage: number): GPUBuffer {
-    const paddedBufferSize = mypad(arr.byteLength);
-    const desc = { size: paddedBufferSize, usage, mappedAtCreation: true };
-    console.log("CreateBuffer Mapped " + arr.byteLength);
-    const buffer = this.device.createBuffer(desc);
-    const bufferMapped = buffer.getMappedRange(0, paddedBufferSize);
-
-    const writeArray =
-      arr instanceof Uint16Array
-        ? new Uint16Array(bufferMapped)
-        : new Float32Array(bufferMapped);
-    writeArray.set(arr);
-    buffer.unmap();
-    return buffer;
   }
 
   createRenderPipeline(shaderobj: Shader): GPURenderPipeline {

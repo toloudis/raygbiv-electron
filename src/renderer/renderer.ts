@@ -1,9 +1,7 @@
 import { mat4 } from "gl-matrix";
 
 import { IRenderTarget, ISceneRenderer } from "./api";
-import { mypad } from "./bufferUtil";
 import Camera from "./camera";
-import Mesh from "./mesh";
 import Scene from "./scene";
 import { SceneObject, SceneMesh } from "./sceneObject";
 import { Shader, MeshShader } from "./shader";
@@ -42,24 +40,6 @@ export default class MyRenderer implements ISceneRenderer {
     this.triangleShaderPipeline = this.createRenderPipeline(
       this.triangleShader
     );
-  }
-
-  // Helper function for creating GPUBuffer(s) out of Typed Arrays
-  createBuffer(arr: Float32Array | Uint16Array, usage: number): GPUBuffer {
-    const paddedBufferSize = mypad(arr.byteLength);
-    const desc = { size: paddedBufferSize, usage, mappedAtCreation: true };
-    console.log("CreateBuffer Mapped " + arr.byteLength);
-    // @ts-ignore TS2339
-    const buffer = this.device.createBuffer(desc);
-    const bufferMapped = buffer.getMappedRange(0, paddedBufferSize);
-
-    const writeArray =
-      arr instanceof Uint16Array
-        ? new Uint16Array(bufferMapped)
-        : new Float32Array(bufferMapped);
-    writeArray.set(arr);
-    buffer.unmap();
-    return buffer;
   }
 
   createRenderPipeline(shaderobj: Shader): GPURenderPipeline {

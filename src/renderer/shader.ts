@@ -1,4 +1,4 @@
-import { mypad } from "./bufferUtil";
+import { createGPUBuffer } from "./bufferUtil";
 
 // consider using readFileSync here to skip the fetch step
 import * as triangle_frag_spv from "./shaders/triangle.frag.spv";
@@ -53,33 +53,11 @@ class Shader {
   }
 
   public createUniformBuffer(uniformData: Float32Array): GPUBuffer {
-    // Helper function for creating GPUBuffer(s) out of Typed Arrays
-
-    const createBuffer = (arr: Float32Array | Uint16Array, usage: number) => {
-      const paddedBufferSize = mypad(arr.byteLength);
-      const desc = {
-        size: paddedBufferSize,
-        usage,
-        mappedAtCreation: true,
-      };
-      console.log("create mesh buffer " + arr.byteLength);
-      // @ts-ignore TS2339
-      const buffer = this.device.createBuffer(desc);
-      const bufferMapped = buffer.getMappedRange(0, paddedBufferSize);
-
-      const writeArray =
-        arr instanceof Uint16Array
-          ? new Uint16Array(bufferMapped)
-          : new Float32Array(bufferMapped);
-      writeArray.set(arr);
-      buffer.unmap();
-      return buffer;
-    };
-
     // stick this data into a gpu buffer
-    const uniformBuffer: GPUBuffer = createBuffer(
-      uniformData,
-      GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    const uniformBuffer: GPUBuffer = createGPUBuffer(
+      uniformData.buffer,
+      GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+      this.device
     );
 
     return uniformBuffer;

@@ -1,4 +1,4 @@
-import { mypad } from "./bufferUtil";
+import { createGPUBuffer } from "./bufferUtil";
 
 export async function createTextureFromImage(
   device: GPUDevice,
@@ -53,15 +53,11 @@ export async function createTextureFromImage(
     usage: GPUTextureUsage.COPY_DST | usage,
   });
 
-  const paddedBufferSize = mypad(data.byteLength);
-  const textureDataBuffer = device.createBuffer({
-    size: paddedBufferSize,
-    usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
-    mappedAtCreation: true,
-  });
-  const mapping = textureDataBuffer.getMappedRange(0, paddedBufferSize);
-  new Uint8Array(mapping).set(data);
-  textureDataBuffer.unmap();
+  const textureDataBuffer = createGPUBuffer(
+    data.buffer,
+    GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
+    device
+  );
 
   const commandEncoder = device.createCommandEncoder({});
   commandEncoder.copyBufferToTexture(

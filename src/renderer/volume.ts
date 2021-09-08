@@ -1,4 +1,4 @@
-import { mypad } from "./bufferUtil";
+import { createGPUBuffer } from "./bufferUtil";
 import { createCube } from "./geometries";
 
 export default class Volume {
@@ -27,34 +27,19 @@ export default class Volume {
     );
     this.volumeBufferView = this.volumeBuffer.createView();
 
-    // Helper function for creating GPUBuffer(s) out of Typed Arrays
-    const createBuffer = (arr: Float32Array | Uint16Array, usage: number) => {
-      const desc = {
-        size: mypad(arr.byteLength),
-        usage,
-        mappedAtCreation: true,
-      };
-      console.log("create mesh buffer " + arr.byteLength);
-      const buffer = device.createBuffer(desc);
-      const bufferMapped = buffer.getMappedRange(0, desc.size);
-
-      const writeArray =
-        arr instanceof Uint16Array
-          ? new Uint16Array(bufferMapped)
-          : new Float32Array(bufferMapped);
-      writeArray.set(arr);
-      buffer.unmap();
-      return buffer;
-    };
-
     // unit cube
     const cubedata = createCube();
 
-    this.positionBuffer = createBuffer(
-      cubedata.positions,
-      GPUBufferUsage.VERTEX
+    this.positionBuffer = createGPUBuffer(
+      cubedata.positions.buffer,
+      GPUBufferUsage.VERTEX,
+      device
     );
-    this.indexBuffer = createBuffer(cubedata.indices, GPUBufferUsage.INDEX);
+    this.indexBuffer = createGPUBuffer(
+      cubedata.indices.buffer,
+      GPUBufferUsage.INDEX,
+      device
+    );
   }
 
   getPositionBuffer(): GPUBuffer {
@@ -98,15 +83,11 @@ function createVolumeTexture(
     usage: GPUTextureUsage.COPY_DST | usage,
   });
 
-  const paddedBufferSize = mypad(data.byteLength);
-  const textureDataBuffer = device.createBuffer({
-    size: paddedBufferSize,
-    usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
-    mappedAtCreation: true,
-  });
-  const mapping = textureDataBuffer.getMappedRange(0, paddedBufferSize);
-  new Uint8Array(mapping).set(data);
-  textureDataBuffer.unmap();
+  const textureDataBuffer = createGPUBuffer(
+    data.buffer,
+    GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC,
+    device
+  );
 
   const commandEncoder = device.createCommandEncoder({});
   commandEncoder.copyBufferToTexture(
