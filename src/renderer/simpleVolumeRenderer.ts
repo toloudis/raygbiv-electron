@@ -13,10 +13,18 @@ interface VolumeShadingData {
   uniformBuffer2: GPUBuffer;
 }
 
-export default class SimpleVolumeRenderer implements ISceneRenderer {
-  private device: GPUDevice = null;
+export interface VolumeRendererSettings {
+  brightness: number;
+  density: number;
+  gammaMin: number;
+  gammaMax: number;
+  gammaScale: number;
+}
 
-  private queue: GPUQueue = null;
+export default class SimpleVolumeRenderer implements ISceneRenderer {
+  public settings: VolumeRendererSettings;
+
+  private device: GPUDevice = null;
 
   // Declare command handles
   private commandEncoder: GPUCommandEncoder = null;
@@ -29,7 +37,13 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
 
   constructor(device: GPUDevice) {
     this.device = device;
-
+    this.settings = {
+      brightness: 50.0,
+      density: 50.0,
+      gammaMax: 1.0,
+      gammaMin: 0.0,
+      gammaScale: 0.5,
+    };
     this.gpuScene = new Map<SceneObject, VolumeShadingData>();
   }
 
@@ -157,6 +171,7 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
       data.set(viewModel);
       // Projection Matrix
       data.set(camera.getProjectionMatrix(), 16);
+
       const data2 = new Float32Array(35);
       data2.set([
         // mat4 inverseModelViewMatrix;
@@ -184,13 +199,13 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
         // float orthoScale;
         1.0,
         // float GAMMA_MIN;
-        0.0,
+        this.settings.gammaMin,
         // float GAMMA_MAX;
-        1.0,
+        this.settings.gammaMax,
         // float GAMMA_SCALE;
-        1.0,
+        this.settings.gammaScale,
         // float BRIGHTNESS;
-        100.0,
+        this.settings.brightness,
         // vec3 AABB_CLIP_MIN;
         0.0,
         0.0,
@@ -206,7 +221,7 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
         // float maskAlpha;
         1.0,
         // float DENSITY;
-        100.0,
+        this.settings.density,
         // int BREAK_STEPS;
         256,
       ]);
@@ -264,6 +279,7 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
           data.byteLength
         );
 
+        //this.device.queue.writeBuffer();
         upload = this.device.createBuffer({
           size: data2.byteLength,
           usage: GPUBufferUsage.COPY_SRC,

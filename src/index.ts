@@ -1,10 +1,12 @@
 import { vec3, mat4 } from "gl-matrix";
+import { Pane } from "tweakpane";
 
 import Graphics from "./renderer/graphics";
 import Camera from "./renderer/camera";
 import CameraController from "./renderer/cameraController";
 import Scene from "./renderer/scene";
 import { VolumeMaker } from "./renderer/geometries";
+import SimpleVolumeRenderer from "./renderer/simpleVolumeRenderer";
 
 const camera = new Camera();
 const scene = new Scene();
@@ -22,6 +24,8 @@ const CANVAS_ID = "raygbiv";
 graphics
   .init()
   .then(async () => {
+    const pane = new Pane();
+
     // tell the graphics system that we will render to this canvas
 
     const canvas: HTMLCanvasElement = document.getElementById(
@@ -47,8 +51,8 @@ graphics
       new Float32Array([1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0])
     );
 
-    //const voldata = VolumeMaker.createSphere(256, 256, 256, 64);
-    const voldata = VolumeMaker.createVolume(256, 256, 256, (x, y, z) => 255);
+    const voldata = VolumeMaker.createSphere(256, 256, 256, 64);
+    //const voldata = VolumeMaker.createVolume(256, 256, 256, (x, y, z) => -1);
     const myVol = graphics.createVolume(voldata, 256, 256, 256, 1.0, 1.0, 1.0);
 
     const mOrigin = mat4.fromTranslation(
@@ -68,6 +72,47 @@ graphics
 
     const sceneRenderer = await graphics.createSimpleVolumeRenderer();
     //const sceneRenderer = await graphics.createDefaultRenderer();
+    pane.addInput(
+      (sceneRenderer as SimpleVolumeRenderer).settings,
+      "brightness",
+      {
+        min: 0,
+        max: 100,
+        step: 0.1,
+      }
+    );
+    pane.addInput((sceneRenderer as SimpleVolumeRenderer).settings, "density", {
+      min: 0,
+      max: 100,
+      step: 0.1,
+    });
+    pane.addInput(
+      (sceneRenderer as SimpleVolumeRenderer).settings,
+      "gammaMin",
+      {
+        min: 0,
+        max: 1,
+        step: 0.01,
+      }
+    );
+    pane.addInput(
+      (sceneRenderer as SimpleVolumeRenderer).settings,
+      "gammaScale",
+      {
+        min: 0,
+        max: 1,
+        step: 0.01,
+      }
+    );
+    pane.addInput(
+      (sceneRenderer as SimpleVolumeRenderer).settings,
+      "gammaMax",
+      {
+        min: 0,
+        max: 1,
+        step: 0.01,
+      }
+    );
 
     // infinite render loop.
 
