@@ -52,7 +52,7 @@ export function createCube(options?: CubeOptions) {
     // back
     5, 6, 7, 7, 4, 5,
     // left
-    4, 0, 3, 3, 7, 4,
+    3, 0, 4, 4, 7, 3,
     // bottom
     4, 5, 1, 1, 0, 4,
     // top

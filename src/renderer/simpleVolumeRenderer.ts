@@ -160,9 +160,25 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
       const data2 = new Float32Array(35);
       data2.set([
         // mat4 inverseModelViewMatrix;
-        1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
         // vec2 iResolution;
-        512, 512,
+        target.getWidth(),
+        target.getHeight(),
         // float isPerspective;
         1,
         // float orthoScale;
@@ -174,19 +190,23 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
         // float GAMMA_SCALE;
         1.0,
         // float BRIGHTNESS;
-        1.0,
+        100.0,
         // vec3 AABB_CLIP_MIN;
-        0.0, 0.0, 0.0,
+        0.0,
+        0.0,
+        0.0,
         // float dataRangeMin; // 0..1 (mapped from 0..uint16_max)
         0.0,
         // vec3 AABB_CLIP_MAX;
-        1.0, 1.0, 1.0,
+        1.0,
+        1.0,
+        1.0,
         // float dataRangeMax; // 0..1 (mapped from 0..uint16_max)
         1.0,
         // float maskAlpha;
         1.0,
         // float DENSITY;
-        1.0,
+        100.0,
         // int BREAK_STEPS;
         256,
       ]);
@@ -324,7 +344,7 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
         object.getVolume().getIndexBuffer(),
         object.getVolume().getIndexFormat()
       );
-      this.passEncoder.drawIndexed(3, 1, 0, 0, 0);
+      this.passEncoder.drawIndexed(3 * 2 * 6, 1, 0, 0, 0);
     }
     this.passEncoder.endPass();
 
