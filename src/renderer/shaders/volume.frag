@@ -63,7 +63,6 @@ vec4 sampleAs3DTexture(vec4 pos) {
 }
 
 vec4 sampleStack(vec4 pos) {
-  return vec4(1.0, 0.0, 0.0, 1.0);
   vec4 col = sampleAs3DTexture(pos);
   col = luma2Alpha(col, GAMMA_MIN, GAMMA_MAX, GAMMA_SCALE);
   return col;
@@ -133,12 +132,12 @@ void main() {
 
   vec2 vUv = gl_FragCoord.xy / iResolution.xy;
 
-  outputColour = vec4(vUv, 0.0, 1.0);
-  return;
-  
   vec3 eyeRay_o, eyeRay_d;
   if (isPerspective != 0.0) {
+    // put ray in object space (which is the 0-1 range of the cube coordinates)
+    // transform view space 0,0,0 (the eye position) into model (object) space
     eyeRay_o = (inverseModelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+    // pObj is already in object space
     eyeRay_d = normalize(pObj - eyeRay_o);
   } else {
     float zDist = 2.0;
@@ -157,14 +156,22 @@ void main() {
     outputColour = vec4(1.0, 0.0, 0.0, 0.0);
     return;
   }
-  else {
-  		outputColour = vec4(1.0, 1.0, 1.0, 1.0);
-  		return;
-  }
+  // else {
+  // 		outputColour = vec4(0.0, 1.0, 0.0, 1.0);
+  // 		return;
+  // }
   float clipNear =
       0.0; //-(dot(eyeRay_o.xyz, eyeNorm) + dNear) / dot(eyeRay_d.xyz, eyeNorm);
   float clipFar = 10000.0; //-(dot(eyeRay_o.xyz,-eyeNorm) + dFar ) /
                            // dot(eyeRay_d.xyz,-eyeNorm);
+
+  //vec3 pos = eyeRay_o + eyeRay_d * ((tnear + tfar)*0.5);
+  //pos.xyz = (pos.xyz + 0.5); // 0.5 * (pos + 1.0); // map position from
+                              // [boxMin, boxMax] to [0, 1] coordinates
+  //outputColour = sampleStack(vec4(pos, 1.0));
+  //return;
+
+
 
   vec4 C = integrateVolume(vec4(eyeRay_o, 1.0), vec4(eyeRay_d, 0.0), tnear,
                            tfar, clipNear, clipFar);
