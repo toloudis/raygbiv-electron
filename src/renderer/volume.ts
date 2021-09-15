@@ -23,7 +23,7 @@ export default class Volume {
       x,
       y,
       z,
-      GPUTextureUsage.SAMPLED
+      GPUTextureUsage.TEXTURE_BINDING
     );
     this.volumeBufferView = this.volumeBuffer.createView();
 
@@ -79,7 +79,8 @@ function createVolumeTexture(
       height: y,
       depthOrArrayLayers: z,
     },
-    format: "r8uint",
+    dimension: "3d",
+    format: "r8unorm",
     usage: GPUTextureUsage.COPY_DST | usage,
   });
 

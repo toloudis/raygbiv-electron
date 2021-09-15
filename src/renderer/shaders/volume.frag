@@ -6,6 +6,7 @@ layout(location = 0) out vec4 outputColour;
 
 layout(set = 0, binding = 1) uniform sampler textureSampler;
 layout(set = 0, binding = 2) uniform texture3D textureAtlas;
+
 // uniform sampler2D lut;
 
 layout(set = 0, binding = 3) uniform UBO {
@@ -52,7 +53,7 @@ vec4 sampleAs3DTexture(vec4 pos) {
                        pos[1] < 0.999 && pos[2] > 0.001 && pos[2] < 0.999);
 
   vec4 texval =
-      textureLod(sampler3D(textureAtlas, textureSampler), pos.xyz, 0).rgba;
+      vec4(textureLod(sampler3D(textureAtlas, textureSampler), pos.xyz, 0).r);
   vec4 retval = vec4(texval.rgb, 1.0);
 
   //    float texval = textureLod(tex, pos.xyz, 0).r;

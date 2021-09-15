@@ -302,24 +302,14 @@ class VolumeShader extends Shader {
       offset: 0,
       format: "float32x3",
     };
-    const colorAttribDesc: GPUVertexAttribute = {
-      shaderLocation: 1, // [[attribute(1)]]
-      offset: 0,
-      format: "float32x3",
-    };
     const positionBufferDesc: GPUVertexBufferLayout = {
       attributes: [positionAttribDesc],
       arrayStride: 4 * 3, // sizeof(float) * 3
       stepMode: "vertex",
     };
-    const colorBufferDesc: GPUVertexBufferLayout = {
-      attributes: [colorAttribDesc],
-      arrayStride: 4 * 3, // sizeof(float) * 3
-      stepMode: "vertex",
-    };
 
     const vertexState: GPUVertexState = {
-      buffers: [positionBufferDesc, colorBufferDesc],
+      buffers: [positionBufferDesc],
       module: this.vertModule,
       entryPoint: "main",
     };
