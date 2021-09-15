@@ -129,6 +129,8 @@ vec4 integrateVolume(vec4 eye_o, vec4 eye_d, float tnear, float tfar,
 }
 void main() {
   outputColour = vec4(1.0, 0.0, 0.0, 1.0);
+  return;
+  
   vec2 vUv = gl_FragCoord.xy / iResolution.xy;
 
   vec3 eyeRay_o, eyeRay_d;

@@ -28,7 +28,7 @@ export default class Volume {
     this.volumeBufferView = this.volumeBuffer.createView();
 
     // unit cube
-    const cubedata = createCube();
+    const cubedata = createCube({ dimensions: [px, py, pz] });
 
     this.positionBuffer = createGPUBuffer(
       cubedata.positions.buffer,
