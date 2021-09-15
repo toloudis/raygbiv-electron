@@ -63,6 +63,7 @@ vec4 sampleAs3DTexture(vec4 pos) {
 }
 
 vec4 sampleStack(vec4 pos) {
+  return vec4(1.0, 0.0, 0.0, 1.0);
   vec4 col = sampleAs3DTexture(pos);
   col = luma2Alpha(col, GAMMA_MIN, GAMMA_MAX, GAMMA_SCALE);
   return col;
@@ -129,9 +130,12 @@ vec4 integrateVolume(vec4 eye_o, vec4 eye_d, float tnear, float tfar,
 }
 void main() {
   outputColour = vec4(1.0, 0.0, 0.0, 1.0);
-  
+
   vec2 vUv = gl_FragCoord.xy / iResolution.xy;
 
+  outputColour = vec4(vUv, 0.0, 1.0);
+  return;
+  
   vec3 eyeRay_o, eyeRay_d;
   if (isPerspective != 0.0) {
     eyeRay_o = (inverseModelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
@@ -150,13 +154,13 @@ void main() {
   float tnear, tfar;
   bool hit = intersectBox(eyeRay_o, eyeRay_d, boxMin, boxMax, tnear, tfar);
   if (!hit) {
-    outputColour = vec4(1.0, 0.0, 1.0, 0.0);
+    outputColour = vec4(1.0, 0.0, 0.0, 0.0);
     return;
   }
-  // else {
-  //		outputColour = vec4(1.0, 1.0, 1.0, 1.0);
-  //		return;
-  //}
+  else {
+  		outputColour = vec4(1.0, 1.0, 1.0, 1.0);
+  		return;
+  }
   float clipNear =
       0.0; //-(dot(eyeRay_o.xyz, eyeNorm) + dNear) / dot(eyeRay_d.xyz, eyeNorm);
   float clipFar = 10000.0; //-(dot(eyeRay_o.xyz,-eyeNorm) + dFar ) /
