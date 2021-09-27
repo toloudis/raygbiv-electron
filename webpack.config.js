@@ -1,4 +1,4 @@
-const path = require('path');
+const path = require("path");
 
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
@@ -41,8 +41,8 @@ module.exports = [
           exclude: /node_modules/,
         },
         {
-          test: /\.spv$/i,
-          type:"asset/resource",
+          test: /\.(spv|wgsl)$/i,
+          type: "asset/resource",
         },
       ],
     },
@@ -73,13 +73,13 @@ module.exports = [
           exclude: /node_modules/,
         },
         {
-          test: /\.spv$/i,
-          type:"asset/resource",
+          test: /\.(spv|wgsl)$/i,
+          type: "asset/resource",
         },
       ],
     },
     output: {
-      path: path.resolve(__dirname, 'dist/browser'),
+      path: path.resolve(__dirname, "dist/browser"),
       filename: "index.js",
       clean: true,
     },
@@ -89,5 +89,4 @@ module.exports = [
       }),
     ],
   },
-
 ];

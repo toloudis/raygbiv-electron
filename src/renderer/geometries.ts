@@ -88,9 +88,9 @@ export class VolumeMaker {
       for (var j = 0; j < vy; ++j) {
         for (var k = 0; k < vx; ++k) {
           offset = i * (vx * vy) + j * vx + k;
-          px = k - cx;
-          py = j - cy;
-          pz = i - cz;
+          px = k - cx; // -vx/2 .. vx/2
+          py = j - cy; // -vy/2 .. vy/2
+          pz = i - cz; // -vz/2 .. vz/2
           if (sdFunc(px, py, pz) < 0) {
             data[offset] = 255;
           } else {

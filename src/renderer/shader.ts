@@ -6,9 +6,14 @@ import * as triangle_vert_spv from "./shaders/triangle.vert.spv";
 import * as volume_frag_spv from "./shaders/volume.frag.spv";
 import * as volume_vert_spv from "./shaders/volume.vert.spv";
 
+import * as volume_wgsl from "./shaders/volume.wgsl";
+
 class Shader {
+  private isWGSL = false;
   protected vspath = "";
   protected fspath = "";
+  protected vsEntry = "main";
+  protected fsEntry = "main";
   protected vertModule: GPUShaderModule = null;
   protected fragModule: GPUShaderModule = null;
   protected device: GPUDevice = null;
@@ -21,24 +26,51 @@ class Shader {
     return fetch(new Request(shaderPath), {
       method: "GET",
       mode: "cors",
+      // }).then((res) => res.arrayBuffer().then((arr) => new Uint32Array(arr)));
     }).then((res) => res.arrayBuffer().then((arr) => new Uint32Array(arr)));
   }
 
-  constructor(vspath: string, fspath: string) {
+  private loadShaderWGSL(shaderPath: string) {
+    return fetch(new Request(shaderPath), {
+      method: "GET",
+      mode: "cors",
+    }).then((res) => res.text());
+  }
+
+  constructor(vspath: string, fspath?: string) {
     this.vspath = vspath;
-    this.fspath = fspath;
+    if (fspath) {
+      this.fspath = fspath;
+    } else {
+      this.isWGSL = true;
+      this.fspath = vspath;
+      this.vsEntry = "main_vs";
+      this.fsEntry = "main_fs";
+    }
   }
 
   protected async loadModules() {
-    const vsmDesc: GPUShaderModuleDescriptor = {
-      code: await this.loadShader(this.vspath),
-    };
-    this.vertModule = this.device.createShaderModule(vsmDesc);
+    if (this.isWGSL) {
+      const vsmDesc: GPUShaderModuleDescriptor = {
+        code: await this.loadShaderWGSL(this.vspath),
+      };
+      this.vertModule = this.device.createShaderModule(vsmDesc);
 
-    const fsmDesc: GPUShaderModuleDescriptor = {
-      code: await this.loadShader(this.fspath),
-    };
-    this.fragModule = this.device.createShaderModule(fsmDesc);
+      const fsmDesc: GPUShaderModuleDescriptor = {
+        code: await this.loadShaderWGSL(this.fspath),
+      };
+      this.fragModule = this.device.createShaderModule(fsmDesc);
+    } else {
+      const vsmDesc: GPUShaderModuleDescriptor = {
+        code: await this.loadShader(this.vspath),
+      };
+      this.vertModule = this.device.createShaderModule(vsmDesc);
+
+      const fsmDesc: GPUShaderModuleDescriptor = {
+        code: await this.loadShader(this.fspath),
+      };
+      this.fragModule = this.device.createShaderModule(fsmDesc);
+    }
 
     console.log("shader modules created");
   }
@@ -90,20 +122,20 @@ class Shader {
     const vertexState: GPUVertexState = {
       buffers: [positionBufferDesc, colorBufferDesc],
       module: this.vertModule,
-      entryPoint: "main",
+      entryPoint: this.vsEntry,
     };
     return vertexState;
   }
 
   // 🖍️ Shader Modules
   getVertexStage(): GPUProgrammableStage {
-    return { module: this.vertModule, entryPoint: "main" };
+    return { module: this.vertModule, entryPoint: this.vsEntry };
   }
 
   getFragmentStage(): GPUProgrammableStage {
     return {
       module: this.fragModule,
-      entryPoint: "main",
+      entryPoint: this.fsEntry,
     };
   }
 
@@ -190,20 +222,20 @@ class MeshShader extends Shader {
     const vertexState: GPUVertexState = {
       buffers: [positionBufferDesc, colorBufferDesc],
       module: this.vertModule,
-      entryPoint: "main",
+      entryPoint: this.vsEntry,
     };
     return vertexState;
   }
 
   // 🖍️ Shader Modules
   getVertexStage(): GPUProgrammableStage {
-    return { module: this.vertModule, entryPoint: "main" };
+    return { module: this.vertModule, entryPoint: this.vsEntry };
   }
 
   getFragmentStage(): GPUProgrammableStage {
     return {
       module: this.fragModule,
-      entryPoint: "main",
+      entryPoint: this.fsEntry,
     };
   }
 
@@ -214,10 +246,11 @@ class MeshShader extends Shader {
 
 class VolumeShader extends Shader {
   constructor() {
-    super(
-      volume_vert_spv as unknown as string,
-      volume_frag_spv as unknown as string
-    );
+    super(volume_wgsl as unknown as string);
+    // super(
+    //   volume_vert_spv as unknown as string,
+    //   volume_frag_spv as unknown as string
+    // );
   }
 
   public async load(device: GPUDevice): Promise<void> {
@@ -311,20 +344,20 @@ class VolumeShader extends Shader {
     const vertexState: GPUVertexState = {
       buffers: [positionBufferDesc],
       module: this.vertModule,
-      entryPoint: "main",
+      entryPoint: this.vsEntry,
     };
     return vertexState;
   }
 
   // 🖍️ Shader Modules
   getVertexStage(): GPUProgrammableStage {
-    return { module: this.vertModule, entryPoint: "main" };
+    return { module: this.vertModule, entryPoint: this.vsEntry };
   }
 
   getFragmentStage(): GPUProgrammableStage {
     return {
       module: this.fragModule,
-      entryPoint: "main",
+      entryPoint: this.fsEntry,
     };
   }
 
