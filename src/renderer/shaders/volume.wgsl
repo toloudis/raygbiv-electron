@@ -172,7 +172,7 @@ fn main_fs(
     ray_o = vec4<f32>(
       ray_o.x * fraguniforms.orthoScale * fraguniforms.iResolution.x / fraguniforms.iResolution.y,
       ray_o.y * fraguniforms.orthoScale,
-      ray_o.z, 
+      ray_o.z,
       ray_o.w
     );
     eyeRay_o = (fraguniforms.inverseModelViewMatrix * ray_o).xyz;
@@ -184,7 +184,7 @@ fn main_fs(
   var tfar:f32;
   let hit:bool = intersectBox(eyeRay_o, eyeRay_d, boxMin, boxMax, &tnear, &tfar);
   if (!hit) {
-    outputColour = vec4<f32>(1.0, 0.0, 0.0, 0.0);
+    outputColour = vec4<f32>(1.0, 0.0, 1.0, 1.0);
     return outputColour;
   }
   // else {

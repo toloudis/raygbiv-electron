@@ -38,8 +38,8 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
   constructor(device: GPUDevice) {
     this.device = device;
     this.settings = {
-      brightness: 50.0,
-      density: 50.0,
+      brightness: 0.5,
+      density: 1.0,
       gammaMax: 1.0,
       gammaMin: 0.0,
       gammaScale: 0.5,
@@ -207,15 +207,15 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
         // float BRIGHTNESS;
         this.settings.brightness,
         // vec3 AABB_CLIP_MIN;
-        0.0,
-        0.0,
-        0.0,
+        -0.5,
+        -0.5,
+        -0.5,
         // float dataRangeMin; // 0..1 (mapped from 0..uint16_max)
         0.0,
         // vec3 AABB_CLIP_MAX;
-        1.0,
-        1.0,
-        1.0,
+        0.5,
+        0.5,
+        0.5,
         // float dataRangeMax; // 0..1 (mapped from 0..uint16_max)
         1.0,
         // float maskAlpha;

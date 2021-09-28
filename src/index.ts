@@ -52,7 +52,7 @@ graphics
     );
 
     //const voldata = VolumeMaker.createSphere(256, 256, 256, 64);
-    const voldata = VolumeMaker.createTorus(256, 256, 256, 32, 16);
+    const voldata = VolumeMaker.createTorus(256, 256, 256, 64, 16);
     //const voldata = VolumeMaker.createVolume(256, 256, 256, (x, y, z) => -1);
     const myVol = graphics.createVolume(voldata, 256, 256, 256, 1.0, 1.0, 1.0);
 
@@ -78,14 +78,14 @@ graphics
       "brightness",
       {
         min: 0,
-        max: 100,
-        step: 0.1,
+        max: 2,
+        step: 0.01,
       }
     );
     pane.addInput((sceneRenderer as SimpleVolumeRenderer).settings, "density", {
       min: 0,
-      max: 100,
-      step: 0.1,
+      max: 1,
+      step: 0.01,
     });
     pane.addInput(
       (sceneRenderer as SimpleVolumeRenderer).settings,

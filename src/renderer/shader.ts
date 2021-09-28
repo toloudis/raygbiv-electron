@@ -329,7 +329,7 @@ class VolumeShader extends Shader {
 
   // TODO customize this for each shader (mesh, volume)
   getVertexStateDesc(): GPUVertexState {
-    // 🔣 Input Assembly
+    // Input Assembly
     const positionAttribDesc: GPUVertexAttribute = {
       shaderLocation: 0, // [[attribute(0)]]
       offset: 0,
@@ -349,7 +349,7 @@ class VolumeShader extends Shader {
     return vertexState;
   }
 
-  // 🖍️ Shader Modules
+  // Shader Modules
   getVertexStage(): GPUProgrammableStage {
     return { module: this.vertModule, entryPoint: this.vsEntry };
   }
