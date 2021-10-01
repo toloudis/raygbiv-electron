@@ -12,7 +12,7 @@ const camera = new Camera();
 const scene = new Scene();
 
 // aim camera at scene
-camera.setPosition(vec3.fromValues(0, 0, 100));
+camera.setPosition(vec3.fromValues(0, 0, 1));
 camera.setTarget(vec3.fromValues(0, 0, 0));
 camera.setUp(vec3.fromValues(0, 1, 0));
 
