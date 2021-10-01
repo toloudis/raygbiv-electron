@@ -116,9 +116,13 @@ class Graphics implements IGraphics {
     }
   }
   private async ensureDeviceOnCurrentAdapter(): Promise<void> {
-    this.device = await this.adapter.requestDevice({
-      /* options */
-    });
+    try {
+      this.device = await this.adapter.requestDevice({
+        /* options */
+      });
+    } catch (e) {
+      console.error(e);
+    }
     this.device.lost.then((info) => {
       // Device was lost.
       console.error("device lost", info);

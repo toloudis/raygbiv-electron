@@ -172,7 +172,7 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
       // Projection Matrix
       data.set(camera.getProjectionMatrix(), 16);
 
-      const data2 = new Float32Array(35);
+      const data2 = new Float32Array(41);
       data2.set([
         // mat4 inverseModelViewMatrix;
         1,
@@ -224,6 +224,16 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
         this.settings.density,
         // int BREAK_STEPS;
         256,
+        // SLICES: f32;
+        60.0,
+        // volumeScale: vec3<f32>;
+        1.0,
+        1.0,
+        1.0,
+        // orthoThickness: f32;
+        1.0,
+        // maxProject: i32;
+        0,
       ]);
       data2.set(viewModelInv);
 
