@@ -18,22 +18,29 @@ class CanvasRenderTarget implements IRenderTarget {
     this.canvas = canvas;
     this.device = device;
 
+    // reinstate devicePixelRatio if performance is sufficient
     this.setSize(
-      canvas.clientWidth * window.devicePixelRatio,
-      canvas.clientHeight * window.devicePixelRatio
+      canvas.clientWidth /* * window.devicePixelRatio */,
+      canvas.clientHeight /* * window.devicePixelRatio */
     );
 
     // add a ResizeObserver for the canvas, to get the swap chain textures updated:
     const resizeObserver = new ResizeObserver(
       (entries: ResizeObserverEntry[]) => {
         for (const entry of entries) {
-          if (entry.target !== this.canvas) {
-            continue;
+          if (entry.target === this.canvas) {
+            if (entry.contentBoxSize) {
+              // Firefox implements `contentBoxSize` as a single content rect, rather than an array
+              const contentBoxSize = Array.isArray(entry.contentBoxSize)
+                ? entry.contentBoxSize[0]
+                : entry.contentBoxSize;
+
+              this.setSize(contentBoxSize.inlineSize, contentBoxSize.blockSize);
+            } else {
+              this.setSize(entry.contentRect.width, entry.contentRect.height);
+            }
+            break;
           }
-          this.setSize(
-            entry.contentBoxSize[0].inlineSize,
-            entry.contentBoxSize[0].blockSize
-          );
         }
       }
     );
@@ -53,7 +60,7 @@ class CanvasRenderTarget implements IRenderTarget {
 
     this.context = this.canvas.getContext(
       "webgpu"
-    ) as unknown as GPUPresentationContext;
+    ) as unknown as GPUCanvasContext;
 
     this.context.configure({
       device: this.device,
