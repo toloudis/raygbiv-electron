@@ -83,7 +83,7 @@ fn sampleAs3DTexture( pos: vec4<f32>) -> vec4<f32> {
 //   maskVal = mix(maskVal, 1.0, maskAlpha);
 // // only mask the rgb, not the alpha(?)
 //   retval.rgb *= maskVal;
- 
+
   return bounds * retval;
 }
 
@@ -223,8 +223,8 @@ fn main_fs(
     return outputColour;
   }
   // else {
-  // 		outputColour = vec4(0.0, 1.0, 0.0, 1.0);
-  // 		return;
+  // 		outputColour = vec4<f32>(0.0, 1.0, 0.0, 1.0);
+  // 		//return outputColour;
   // }
   let clipNear =
       0.0; //-(dot(eyeRay_o.xyz, eyeNorm) + dNear) / dot(eyeRay_d.xyz, eyeNorm);

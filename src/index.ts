@@ -12,7 +12,7 @@ const camera = new Camera();
 const scene = new Scene();
 
 // aim camera at scene
-camera.setPosition(vec3.fromValues(0, 0, 1));
+camera.setPosition(vec3.fromValues(0, 0, 3));
 camera.setTarget(vec3.fromValues(0, 0, 0));
 camera.setUp(vec3.fromValues(0, 1, 0));
 
@@ -52,7 +52,7 @@ graphics
     );
 
     //const voldata = VolumeMaker.createSphere(256, 256, 256, 64);
-    const voldata = VolumeMaker.createTorus(256, 256, 256, 64, 16);
+    const voldata = VolumeMaker.createTorus(256, 256, 256, 96, 16);
     //const voldata = VolumeMaker.createVolume(256, 256, 256, (x, y, z) => -1);
     const myVol = graphics.createVolume(voldata, 256, 256, 256, 1.0, 1.0, 1.0);
 
