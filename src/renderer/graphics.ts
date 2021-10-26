@@ -110,8 +110,8 @@ class Graphics implements IGraphics {
       // fallback.)
       this.adapter = await navigator.gpu.requestAdapter({
         /* options */
-        powerPreference: "low-power",
-        //        powerPreference: "high-performance",
+        //powerPreference: "low-power",
+        powerPreference: "high-performance",
       });
     }
   }

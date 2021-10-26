@@ -50,7 +50,7 @@ class TrackballControls {
   private noRotate: boolean;
   private noZoom: boolean;
   private noPan: boolean;
-  private staticMoving: boolean;
+  public staticMoving: boolean;
   private dynamicDampingFactor: number;
   private minDistance: number;
   private maxDistance: number;

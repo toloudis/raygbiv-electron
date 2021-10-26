@@ -35,6 +35,7 @@ graphics
 
     // install camera controller
     const controller = new CameraController(camera, canvas);
+    controller.staticMoving = true;
     camera.setProjection(
       canvas.width / canvas.height,
       (60.0 * Math.PI) / 180.0,
