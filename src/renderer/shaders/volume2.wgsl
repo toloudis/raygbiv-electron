@@ -48,7 +48,7 @@ fn main_vs(
 };
 
 [[group(0), binding(1)]] var textureSampler: sampler;
-[[group(0), binding(2)]] var textureAtlas: texture_3d<f32>;
+[[group(0), binding(2)]] var textureAtlas: texture_2d<f32>;
 [[group(0), binding(3)]] var<uniform> fraguniforms: FragUBO;
 
 let M_PI = 3.14159265358979323846;
@@ -73,18 +73,49 @@ fn luma2Alpha( color: ptr<function, vec4<f32>>,  vmin:f32,  vmax:f32,  C:f32) ->
   return (*color);
 }
 
+fn offsetFrontBack( t:f32, nx:f32, ny:f32)->vec2<f32> {
+  let a = i32(t);
+  let ax = i32(fraguniforms.ATLAS_X);
+  let os = vec2<f32>(f32(a-(a/ax)*ax) / fraguniforms.ATLAS_X, f32(a/ax) / fraguniforms.ATLAS_Y);
+  return os;
+}
+
+
 fn sampleAs3DTexture( pos: vec4<f32>) -> vec4<f32> {
   let bounds = f32(pos[0] >= 0.0 && pos[0] <= 1.0 && pos[1] >= 0.0 &&
                        pos[1] <= 1.0 && pos[2] >= 0.0 && pos[2] <= 1.0);
 
-  let texval:vec4<f32> =
-      vec4<f32>(textureSampleLevel(textureAtlas, textureSampler, pos.xyz, 0.0).r);
-  let retval = vec4<f32>(texval.rgb, 1.0);
-//   vec4 maskval =
-//       vec4(textureLod(sampler3D(textureAtlasMask, textureSampler), pos.xyz, 0).r);
-//   maskVal = mix(maskVal, 1.0, maskAlpha);
-// // only mask the rgb, not the alpha(?)
-//   retval.rgb *= maskVal;
+  let nSlices = f32(fraguniforms.SLICES);
+  let flipVolume = vec3<f32>(1.0,1.0,1.0);
+  var loc0 = vec2<f32>(
+    (flipVolume.x*(pos.x - 0.5) + 0.5)/fraguniforms.ATLAS_X,
+    (flipVolume.y*(pos.y - 0.5) + 0.5)/fraguniforms.ATLAS_Y);
+  let textureRes = textureDimensions(textureAtlas);
+  loc0 = vec2<f32>(0.5/f32(textureRes.x), 0.5/f32(textureRes.y)) + loc0*vec2<f32>(1.0-(fraguniforms.ATLAS_X)/f32(textureRes.x), 1.0-(fraguniforms.ATLAS_Y)/f32(textureRes.y));
+  let z = (pos.z) * (nSlices - 1.0);
+  let zfloor = floor(z);
+  var z0  = zfloor;
+  var z1 = (zfloor+1.0);
+  z1 = clamp(z1, 0.0, nSlices - 1.0);
+  var t = z-zfloor; //mod(z, 1.0);
+  if (flipVolume.z == -1.0) {
+    z0 = nSlices - z0 - 1.0;
+    z1 = nSlices - z1 - 1.0;
+    t = 1.0 - t;
+  }
+  var o0 = offsetFrontBack(z0,fraguniforms.ATLAS_X,fraguniforms.ATLAS_Y);//*pix;
+  var o1 = offsetFrontBack(z1,fraguniforms.ATLAS_X,fraguniforms.ATLAS_Y);//*pix;
+  o0 = clamp(o0, vec2<f32>(0.0,0.0), vec2<f32>(1.0 - 1.0/fraguniforms.ATLAS_X, 1.0 - 1.0/fraguniforms.ATLAS_Y)) + loc0;
+  o1 = clamp(o1, vec2<f32>(0.0,0.0), vec2<f32>(1.0 - 1.0/fraguniforms.ATLAS_X, 1.0 - 1.0/fraguniforms.ATLAS_Y)) + loc0;
+  let slice0Color = textureSampleLevel(textureAtlas, textureSampler, o0, 0.0);
+  let slice1Color = textureSampleLevel(textureAtlas, textureSampler, o1, 0.0);
+  let retval = mix(slice0Color, slice1Color, t);
+
+  //float slice0Mask = vec4<f32>(textureSampleLevel(textureAtlasMask, textureSampler, o0, 0.0).r;
+  //float slice1Mask = vec4<f32>(textureSampleLevel(textureAtlasMask, textureSampler, o1, 0.0).r;
+  //var maskVal = mix(slice0Mask, slice1Mask, t);
+  //maskVal = mix(maskVal, 1.0, maskAlpha);
+  //retval.rgb *= maskVal;
 
   return bounds * retval;
 }

@@ -53,9 +53,9 @@ graphics
     );
 
     //const voldata = VolumeMaker.createSphere(256, 256, 256, 64);
-    const voldata = VolumeMaker.createTorus(256, 256, 256, 96, 16);
+    const voldata = VolumeMaker.createTorus(256, 256, 48, 24, 16);
     //const voldata = VolumeMaker.createVolume(256, 256, 256, (x, y, z) => -1);
-    const myVol = graphics.createVolume(voldata, 256, 256, 256, 1.0, 1.0, 1.0);
+    const myVol = graphics.createVolume(voldata, 256, 256, 48, 1.0, 1.0, 1.0);
 
     const mOrigin = mat4.fromTranslation(
       mat4.create(),
