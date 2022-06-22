@@ -114,15 +114,17 @@ export default class MyRenderer implements ISceneRenderer {
     // Write and submit commands to queue
     const colorAttachment: GPURenderPassColorAttachment = {
       view: renderTarget.getColorTextureView(),
-      loadValue: { r: 0, g: 0, b: 0, a: 1 },
+      clearValue: { r: 0, g: 0, b: 0, a: 1 },
+      loadOp: "clear",
       storeOp: "store",
     };
 
     const depthAttachment: GPURenderPassDepthStencilAttachment = {
       view: renderTarget.getDepthTextureView(),
-      depthLoadValue: 1,
+      depthClearValue: 1,
+      depthLoadOp: "clear",
       depthStoreOp: "store",
-      stencilLoadValue: "load",
+      stencilLoadOp: "load",
       stencilStoreOp: "store",
     };
 
@@ -246,7 +248,7 @@ export default class MyRenderer implements ISceneRenderer {
       );
       this.passEncoder.drawIndexed(3, 1, 0, 0, 0);
     }
-    this.passEncoder.endPass();
+    this.passEncoder.end();
 
     this.device.queue.submit([this.commandEncoder.finish()]);
   }

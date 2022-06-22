@@ -62,12 +62,12 @@ class Shader {
       this.fragModule = this.device.createShaderModule(fsmDesc);
     } else {
       const vsmDesc: GPUShaderModuleDescriptor = {
-        code: await this.loadShader(this.vspath),
+        code: await this.loadShaderWGSL(this.vspath),
       };
       this.vertModule = this.device.createShaderModule(vsmDesc);
 
       const fsmDesc: GPUShaderModuleDescriptor = {
-        code: await this.loadShader(this.fspath),
+        code: await this.loadShaderWGSL(this.fspath),
       };
       this.fragModule = this.device.createShaderModule(fsmDesc);
     }
