@@ -1,18 +1,47 @@
 struct VertexInput {
-  @location(0) position: vec3<f32>;
+  @location(0) position: vec3<f32>
 };
 struct VertexOutput {
-  @builtin(position) clip_position: vec4<f32>;
-  @location(0) pObj: vec3<f32>;
+  @builtin(position) clip_position: vec4<f32>,
+  @location(0) pObj: vec3<f32>
 };
 
 struct Uniforms {
-  modelViewMatrix: mat4x4<f32>;
-  projectionMatrix: mat4x4<f32>;
+  modelViewMatrix: mat4x4<f32>,
+  projectionMatrix: mat4x4<f32>
+};
+
+struct FragUBO {
+  inverseModelViewMatrix: mat4x4<f32>,
+  iResolution: vec2<f32>,
+  isPerspective: f32,
+  orthoScale: f32,
+  GAMMA_MIN: f32,
+  GAMMA_MAX: f32,
+  GAMMA_SCALE: f32,
+  BRIGHTNESS: f32,
+  AABB_CLIP_MIN: vec3<f32>,
+  dataRangeMin: f32, // 0..1 (mapped from 0..uint16_max)
+  AABB_CLIP_MAX: vec3<f32>,
+  dataRangeMax: f32, // 0..1 (mapped from 0..uint16_max)
+  maskAlpha: f32,
+  DENSITY: f32,
+  BREAK_STEPS: i32,
+  SLICES: f32,
+  volumeScale: vec3<f32>,
+  orthoThickness: f32,
+  maxProject: i32,
+  ATLAS_X: i32,
+  ATLAS_Y: i32,
+  padding: i32
 };
 
 @group(0) @binding(0)
 var<uniform> uniforms: Uniforms;
+@group(0) @binding(1) var textureSampler: sampler;
+@group(0) @binding(2) var textureAtlas: texture_3d<f32>;
+@group(0) @binding(3) var<uniform> fraguniforms: FragUBO;
+
 
 
 @stage(vertex)
@@ -24,35 +53,6 @@ fn main_vs(
     out.clip_position = uniforms.projectionMatrix * uniforms.modelViewMatrix * vec4<f32>(in.position, 1.0);
     return out;
 }
-
-struct FragUBO {
-  inverseModelViewMatrix: mat4x4<f32>;
-  iResolution: vec2<f32>;
-  isPerspective: f32;
-  orthoScale: f32;
-  GAMMA_MIN: f32;
-  GAMMA_MAX: f32;
-  GAMMA_SCALE: f32;
-  BRIGHTNESS: f32;
-  AABB_CLIP_MIN: vec3<f32>;
-  dataRangeMin: f32; // 0..1 (mapped from 0..uint16_max)
-  AABB_CLIP_MAX: vec3<f32>;
-  dataRangeMax: f32; // 0..1 (mapped from 0..uint16_max)
-  maskAlpha: f32;
-  DENSITY: f32;
-  BREAK_STEPS: i32;
-  SLICES: f32;
-  volumeScale: vec3<f32>;
-  orthoThickness: f32;
-  maxProject: i32;
-  ATLAS_X: i32;
-  ATLAS_Y: i32;
-  padding: i32;
-};
-
-@group(0) @binding(1) var textureSampler: sampler;
-@group(0) @binding(2) var textureAtlas: texture_3d<f32>;
-@group(0) @binding(3) var<uniform> fraguniforms: FragUBO;
 
 let M_PI = 3.14159265358979323846;
 
