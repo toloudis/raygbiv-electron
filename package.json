@@ -29,7 +29,6 @@
     "lint": "eslint",
     "start": "npm run build && electron ./dist/main.js",
     "start:web": "webpack serve --config webpack.config.js",
-    "shaders": "node build-shaders.mjs",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
     "postinstall": "electron-builder install-app-deps"
@@ -38,7 +37,6 @@
   "license": "ISC",
   "devDependencies": {
     "@tweakpane/core": "^1.1.0",
-    "@webgpu/glslang": "^0.0.15",
     "@webgpu/types": "^0.1.20",
     "electron-builder": "^23.1.0",
     "electron-nightly": "^21.0.0-nightly.20220622",
