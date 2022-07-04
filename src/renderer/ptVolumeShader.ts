@@ -4,55 +4,110 @@ import { Shader } from "./shader";
 import * as ptvolume_wgsl from "./shaders/ptvolume.wgsl";
 
 class VolumeShader extends Shader {
+  bindGroupLayouts: GPUBindGroupLayout[] = [];
+  pipelineLayout: GPUPipelineLayout;
+
   constructor() {
     super(ptvolume_wgsl as unknown as string);
-    // super(
-    //   volume_vert_spv as unknown as string,
-    //   volume_frag_spv as unknown as string
-    // );
   }
 
   public async load(device: GPUDevice): Promise<void> {
     this.device = device;
     // inside an async function...
-    // Note: You could include these binaries as variables in your
-    // javascript source.
 
     await this.loadModules();
 
-    // Bind Group Layout
-    this.uniformBindGroupLayout = this.device.createBindGroupLayout({
+    this.createBindGroupLayouts(device);
+    this.pipelineLayout = device.createPipelineLayout({
+      bindGroupLayouts: this.bindGroupLayouts,
+    });
+
+    const positionAttribDesc: GPUVertexAttribute = {
+      shaderLocation: 0, // [[attribute(0)]]
+      offset: 0,
+      format: "float32x2",
+    };
+    const positionBufferDesc: GPUVertexBufferLayout = {
+      attributes: [positionAttribDesc],
+      arrayStride: 4 * 2,
+      stepMode: "vertex",
+    };
+    this.vertexState = {
+      buffers: [positionBufferDesc],
+      module: this.vertModule,
+      entryPoint: "main_vs",
+    };
+
+    console.log("pipeline and uniform group layouts created");
+  }
+
+  private createBindGroupLayouts(device: GPUDevice): GPUBindGroupLayout[] {
+    const bindGroupLayout = device.createBindGroupLayout({
       entries: [
         {
-          binding: 0, // binding 0 for set 0 in the VS glsl is a uniform buffer
-          visibility: GPUShaderStage.VERTEX,
-          buffer: { type: "uniform" as GPUBufferBindingType },
-        },
-        {
-          binding: 1, // binding 0 for set 0 in the VS glsl is a uniform buffer
+          binding: 0,
           visibility: GPUShaderStage.FRAGMENT,
-          sampler: { type: "filtering" as GPUSamplerBindingType },
+          buffer: { type: "uniform" },
         },
         {
-          binding: 2, // binding 0 for set 0 in the VS glsl is a uniform buffer
+          binding: 1,
+          visibility: GPUShaderStage.FRAGMENT,
+          buffer: { type: "uniform" },
+        },
+        {
+          binding: 2,
+          visibility: GPUShaderStage.FRAGMENT,
+          buffer: { type: "uniform" },
+        },
+        {
+          binding: 3,
+          visibility: GPUShaderStage.FRAGMENT,
+          buffer: { type: "uniform" },
+        },
+        {
+          binding: 4,
+          visibility: GPUShaderStage.FRAGMENT,
+          buffer: { type: "uniform" },
+        },
+        {
+          binding: 5,
+          visibility: GPUShaderStage.FRAGMENT,
+          sampler: { type: "filtering" },
+        },
+        {
+          binding: 6,
           visibility: GPUShaderStage.FRAGMENT,
           texture: {
-            sampleType: "float" as GPUTextureSampleType,
-            viewDimension: "3d" as GPUTextureViewDimension,
+            sampleType: "float",
+            viewDimension: "3d",
           },
         },
         {
-          binding: 3, // binding 0 for set 0 in the VS glsl is a uniform buffer
+          binding: 7,
           visibility: GPUShaderStage.FRAGMENT,
-          buffer: { type: "uniform" as GPUBufferBindingType },
+          sampler: { type: "filtering" },
+        },
+        {
+          binding: 8,
+          visibility: GPUShaderStage.FRAGMENT,
+          texture: {
+            sampleType: "float",
+            viewDimension: "2d",
+          },
+        },
+        // NEED DIFFERENT SAMPLER FOR THIS?
+        // this is just using a nearest,nearest sampler
+        {
+          binding: 9,
+          visibility: GPUShaderStage.FRAGMENT,
+          texture: {
+            sampleType: "float",
+            viewDimension: "2d",
+          },
         },
       ],
     });
-    this.pipelineLayout = this.device.createPipelineLayout({
-      // order here set number from the glsl
-      bindGroupLayouts: [this.uniformBindGroupLayout],
-    });
-    console.log("pipeline and uniform group layouts created");
+    return [bindGroupLayout];
   }
 
   public createShaderBindGroup(
@@ -124,3 +179,95 @@ class VolumeShader extends Shader {
     return this.pipelineLayout;
   }
 }
+
+export { VolumeShader };
+
+//# shader has shader, bind_group_layouts, pipeline_layout, and vertex_state
+// camera_dtype = [
+//     ("from", "f4", (3)),
+//     ("pad0", "f4"),
+//     ("U", "f4", (3)),
+//     ("pad1", "f4"),
+//     ("V", "f4", (3)),
+//     ("pad2", "f4"),
+//     ("N", "f4", (3)),
+//     ("pad3", "f4"),
+//     ("screen", "f4", (4)),
+//     ("invScreen", "f4", (2)),
+//     ("focalDistance", "f4"),
+//     ("apertureSize", "f4"),
+//     ("isPerspective", "f4"),
+//     ("pad4", "f4", (3)),
+// ]
+// light_dtype = [
+//     ("theta", "f4"),
+//     ("phi", "f4"),
+//     ("width", "f4"),
+//     ("halfWidth", "f4"),
+//     ("height", "f4"),
+//     ("halfHeight", "f4"),
+//     ("distance", "f4"),
+//     ("skyRadius", "f4"),
+//     ("area", "f4"),
+//     ("areaPdf", "f4"),
+//     ("T", "i4"),
+//     ("pad", "f4"),
+//     ("P", "f4", (3)),
+//     ("pad0", "f4"),
+//     ("target", "f4", (3)),
+//     ("pad1", "f4"),
+//     ("N", "f4", (3)),
+//     ("pad2", "f4"),
+//     ("U", "f4", (3)),
+//     ("pad3", "f4"),
+//     ("V", "f4", (3)),
+//     ("pad4", "f4"),
+//     ("color", "f4", (3)),
+//     ("pad5", "f4"),
+//     ("colorTop", "f4", (3)),
+//     ("pad6", "f4"),
+//     ("colorMiddle", "f4", (3)),
+//     ("pad7", "f4"),
+//     ("colorBottom", "f4", (3)),
+//     ("pad8", "f4"),
+// ]
+
+// globalparams_dtype = [
+//     ("gClippedAaBbMin", "f4", (3)),
+//     ("pad0", "f4"),
+//     ("gClippedAaBbMax", "f4", (3)),
+//     ("gDensityScale", "f4"),
+//     ("gStepSize", "f4"),
+//     ("gStepSizeShadow", "f4"),
+//     ("pad2", "f4", (2)),
+//     ("gInvAaBbSize", "f4", (3)),
+//     ("g_nChannels", "i4"),
+//     ("gShadingType", "i4"),
+//     ("pad3", "f4", (3)),
+//     ("gGradientDeltaX", "f4", (3)),
+//     ("pad4", "f4"),
+//     ("gGradientDeltaY", "f4", (3)),
+//     ("pad5", "f4"),
+//     ("gGradientDeltaZ", "f4", (3)),
+//     ("gInvGradientDelta", "f4"),
+//     ("gGradientFactor", "f4"),
+//     ("uShowLights", "f4"),
+//     ("pad8", "f4", (2)),
+// ]
+
+// channels_dtype = [
+//     ("g_intensityMax", "f4", (4)),
+//     ("g_intensityMin", "f4", (4)),
+//     ("g_opacity", "f4", (4)),
+//     ("g_emissive", "f4", (4, 4)),
+//     ("g_diffuse", "f4", (4, 4)),
+//     ("g_specular", "f4", (4, 4)),
+//     ("g_roughness", "f4", (4)),
+// ]
+
+// # compositing / progressive render
+// progressive_dtype = [
+//     ("uFrameCounter", "f4"),
+//     ("uSampleCounter", "f4"),
+//     ("uResolution", "f4", (2)),
+// ]
