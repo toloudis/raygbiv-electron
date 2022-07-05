@@ -4,12 +4,10 @@ import { createGPUBuffer } from "./bufferUtil";
 import * as volume_wgsl from "./shaders/volume.wgsl";
 
 class Shader {
-  protected vspath = "";
-  protected fspath = "";
-  protected vsEntry = "main";
-  protected fsEntry = "main";
-  protected vertModule: GPUShaderModule = null;
-  protected fragModule: GPUShaderModule = null;
+  protected srcpath = "";
+  protected vsEntry = "main_vs";
+  protected fsEntry = "main_fs";
+  protected shaderModule: GPUShaderModule = null;
   protected device: GPUDevice = null;
 
   protected bindGroupLayouts: GPUBindGroupLayout[] = [];
@@ -23,23 +21,17 @@ class Shader {
     }).then((res) => res.text());
   }
 
-  constructor(vspath: string) {
-    this.vspath = vspath;
-    this.fspath = vspath;
+  constructor(srcpath: string) {
+    this.srcpath = srcpath;
     this.vsEntry = "main_vs";
     this.fsEntry = "main_fs";
   }
 
   protected async loadModules() {
-    const vsmDesc: GPUShaderModuleDescriptor = {
-      code: await this.loadShaderWGSL(this.vspath),
+    const smDesc: GPUShaderModuleDescriptor = {
+      code: await this.loadShaderWGSL(this.srcpath),
     };
-    this.vertModule = this.device.createShaderModule(vsmDesc);
-
-    const fsmDesc: GPUShaderModuleDescriptor = {
-      code: await this.loadShaderWGSL(this.fspath),
-    };
-    this.fragModule = this.device.createShaderModule(fsmDesc);
+    this.shaderModule = this.device.createShaderModule(smDesc);
 
     console.log("shader modules created");
   }
@@ -90,7 +82,7 @@ class Shader {
 
     const vertexState: GPUVertexState = {
       buffers: [positionBufferDesc, colorBufferDesc],
-      module: this.vertModule,
+      module: this.shaderModule,
       entryPoint: this.vsEntry,
     };
     return vertexState;
@@ -98,12 +90,12 @@ class Shader {
 
   // 🖍️ Shader Modules
   getVertexStage(): GPUProgrammableStage {
-    return { module: this.vertModule, entryPoint: this.vsEntry };
+    return { module: this.shaderModule, entryPoint: this.vsEntry };
   }
 
   getFragmentStage(): GPUProgrammableStage {
     return {
-      module: this.fragModule,
+      module: this.shaderModule,
       entryPoint: this.fsEntry,
     };
   }
@@ -188,7 +180,7 @@ class MeshShader extends Shader {
 
     const vertexState: GPUVertexState = {
       buffers: [positionBufferDesc, colorBufferDesc],
-      module: this.vertModule,
+      module: this.shaderModule,
       entryPoint: this.vsEntry,
     };
     return vertexState;
@@ -196,12 +188,12 @@ class MeshShader extends Shader {
 
   // 🖍️ Shader Modules
   getVertexStage(): GPUProgrammableStage {
-    return { module: this.vertModule, entryPoint: this.vsEntry };
+    return { module: this.shaderModule, entryPoint: this.vsEntry };
   }
 
   getFragmentStage(): GPUProgrammableStage {
     return {
-      module: this.fragModule,
+      module: this.shaderModule,
       entryPoint: this.fsEntry,
     };
   }
@@ -311,7 +303,7 @@ class VolumeShader extends Shader {
 
     const vertexState: GPUVertexState = {
       buffers: [positionBufferDesc],
-      module: this.vertModule,
+      module: this.shaderModule,
       entryPoint: this.vsEntry,
     };
     return vertexState;
@@ -319,12 +311,12 @@ class VolumeShader extends Shader {
 
   // Shader Modules
   getVertexStage(): GPUProgrammableStage {
-    return { module: this.vertModule, entryPoint: this.vsEntry };
+    return { module: this.shaderModule, entryPoint: this.vsEntry };
   }
 
   getFragmentStage(): GPUProgrammableStage {
     return {
-      module: this.fragModule,
+      module: this.shaderModule,
       entryPoint: this.fsEntry,
     };
   }

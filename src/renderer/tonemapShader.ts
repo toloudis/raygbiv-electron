@@ -31,7 +31,7 @@ class TonemapShader extends Shader {
     };
     this.vertexState = {
       buffers: [positionBufferDesc],
-      module: this.vertModule,
+      module: this.shaderModule,
       entryPoint: "main_vs",
     };
 
@@ -111,7 +111,7 @@ class TonemapShader extends Shader {
 
     const vertexState: GPUVertexState = {
       buffers: [positionBufferDesc],
-      module: this.vertModule,
+      module: this.shaderModule,
       entryPoint: this.vsEntry,
     };
     return vertexState;
@@ -119,12 +119,12 @@ class TonemapShader extends Shader {
 
   // Shader Modules
   getVertexStage(): GPUProgrammableStage {
-    return { module: this.vertModule, entryPoint: this.vsEntry };
+    return { module: this.shaderModule, entryPoint: this.vsEntry };
   }
 
   getFragmentStage(): GPUProgrammableStage {
     return {
-      module: this.fragModule,
+      module: this.shaderModule,
       entryPoint: this.fsEntry,
     };
   }
