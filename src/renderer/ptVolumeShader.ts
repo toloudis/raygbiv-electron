@@ -4,10 +4,6 @@ import { Shader } from "./shader";
 import * as ptvolume_wgsl from "./shaders/ptvolume.wgsl";
 
 class VolumeShader extends Shader {
-  bindGroupLayouts: GPUBindGroupLayout[] = [];
-  pipelineLayout: GPUPipelineLayout;
-  vertexState: GPUVertexState;
-
   constructor() {
     super(ptvolume_wgsl as unknown as string);
   }
