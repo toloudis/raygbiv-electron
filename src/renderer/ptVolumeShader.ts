@@ -6,6 +6,7 @@ import * as ptvolume_wgsl from "./shaders/ptvolume.wgsl";
 class VolumeShader extends Shader {
   bindGroupLayouts: GPUBindGroupLayout[] = [];
   pipelineLayout: GPUPipelineLayout;
+  vertexState: GPUVertexState;
 
   constructor() {
     super(ptvolume_wgsl as unknown as string);
@@ -47,52 +48,52 @@ class VolumeShader extends Shader {
         {
           binding: 0,
           visibility: GPUShaderStage.FRAGMENT,
-          buffer: { type: "uniform" },
+          buffer: { type: "uniform" as GPUBufferBindingType },
         },
         {
           binding: 1,
           visibility: GPUShaderStage.FRAGMENT,
-          buffer: { type: "uniform" },
+          buffer: { type: "uniform" as GPUBufferBindingType },
         },
         {
           binding: 2,
           visibility: GPUShaderStage.FRAGMENT,
-          buffer: { type: "uniform" },
+          buffer: { type: "uniform" as GPUBufferBindingType },
         },
         {
           binding: 3,
           visibility: GPUShaderStage.FRAGMENT,
-          buffer: { type: "uniform" },
+          buffer: { type: "uniform" as GPUBufferBindingType },
         },
         {
           binding: 4,
           visibility: GPUShaderStage.FRAGMENT,
-          buffer: { type: "uniform" },
+          buffer: { type: "uniform" as GPUBufferBindingType },
         },
         {
           binding: 5,
           visibility: GPUShaderStage.FRAGMENT,
-          sampler: { type: "filtering" },
+          sampler: { type: "filtering" as GPUSamplerBindingType },
         },
         {
           binding: 6,
           visibility: GPUShaderStage.FRAGMENT,
           texture: {
-            sampleType: "float",
-            viewDimension: "3d",
+            sampleType: "float" as GPUTextureSampleType,
+            viewDimension: "3d" as GPUTextureViewDimension,
           },
         },
         {
           binding: 7,
           visibility: GPUShaderStage.FRAGMENT,
-          sampler: { type: "filtering" },
+          sampler: { type: "filtering" as GPUSamplerBindingType },
         },
         {
           binding: 8,
           visibility: GPUShaderStage.FRAGMENT,
           texture: {
-            sampleType: "float",
-            viewDimension: "2d",
+            sampleType: "float" as GPUTextureSampleType,
+            viewDimension: "2d" as GPUTextureViewDimension,
           },
         },
         // NEED DIFFERENT SAMPLER FOR THIS?
@@ -101,8 +102,8 @@ class VolumeShader extends Shader {
           binding: 9,
           visibility: GPUShaderStage.FRAGMENT,
           texture: {
-            sampleType: "float",
-            viewDimension: "2d",
+            sampleType: "float" as GPUTextureSampleType,
+            viewDimension: "2d" as GPUTextureViewDimension,
           },
         },
       ],
@@ -119,7 +120,7 @@ class VolumeShader extends Shader {
     //  Bind Group
     // This would be used when encoding commands
     return this.device.createBindGroup({
-      layout: this.uniformBindGroupLayout,
+      layout: this.bindGroupLayouts[0],
       entries: [
         {
           binding: 0,

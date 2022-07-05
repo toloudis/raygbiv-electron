@@ -12,8 +12,9 @@ class Shader {
   protected fragModule: GPUShaderModule = null;
   protected device: GPUDevice = null;
 
-  protected uniformBindGroupLayout: GPUBindGroupLayout = null;
+  protected bindGroupLayouts: GPUBindGroupLayout[] = [];
   protected pipelineLayout: GPUPipelineLayout = null;
+  protected vertexState: GPUVertexState = null;
 
   private loadShaderWGSL(shaderPath: string) {
     return fetch(new Request(shaderPath), {
@@ -126,7 +127,7 @@ class MeshShader extends Shader {
     await this.loadModules();
 
     // Bind Group Layout
-    this.uniformBindGroupLayout = this.device.createBindGroupLayout({
+    const uniformBindGroupLayout = this.device.createBindGroupLayout({
       entries: [
         {
           binding: 0, // binding 0 for set 0 in the VS glsl is a uniform buffer
@@ -135,9 +136,10 @@ class MeshShader extends Shader {
         },
       ],
     });
+    this.bindGroupLayouts = [uniformBindGroupLayout];
     this.pipelineLayout = this.device.createPipelineLayout({
       // order here set number from the glsl
-      bindGroupLayouts: [this.uniformBindGroupLayout],
+      bindGroupLayouts: this.bindGroupLayouts,
     });
     console.log("pipeline and uniform group layouts created");
   }
@@ -150,7 +152,7 @@ class MeshShader extends Shader {
     //  Bind Group
     // This would be used when encoding commands
     return this.device.createBindGroup({
-      layout: this.uniformBindGroupLayout,
+      layout: this.bindGroupLayouts[0],
       entries: [
         {
           binding: 0,
@@ -227,7 +229,7 @@ class VolumeShader extends Shader {
     await this.loadModules();
 
     // Bind Group Layout
-    this.uniformBindGroupLayout = this.device.createBindGroupLayout({
+    const uniformBindGroupLayout = this.device.createBindGroupLayout({
       entries: [
         {
           binding: 0, // binding 0 for set 0 in the VS glsl is a uniform buffer
@@ -254,9 +256,10 @@ class VolumeShader extends Shader {
         },
       ],
     });
+    this.bindGroupLayouts = [uniformBindGroupLayout];
     this.pipelineLayout = this.device.createPipelineLayout({
       // order here set number from the glsl
-      bindGroupLayouts: [this.uniformBindGroupLayout],
+      bindGroupLayouts: this.bindGroupLayouts,
     });
     console.log("pipeline and uniform group layouts created");
   }
@@ -270,7 +273,7 @@ class VolumeShader extends Shader {
     //  Bind Group
     // This would be used when encoding commands
     return this.device.createBindGroup({
-      layout: this.uniformBindGroupLayout,
+      layout: this.bindGroupLayouts[0],
       entries: [
         {
           binding: 0,
