@@ -7,7 +7,7 @@ struct VertexOutput {
   @location(0) vUv: vec2<f32>
 };
 
-@stage(vertex)
+@vertex
 fn main_vs(
     in: VertexInput,
 ) -> VertexOutput {
@@ -1131,7 +1131,7 @@ fn CumulativeMovingAverage(A: vec4<f32>, Ax: vec4<f32>, N: f32) -> vec4<f32> {
     return A + ((Ax - A) / max((N), 1.0));
 }
 
-@stage(fragment)
+@fragment
 fn main_fs(
     in: VertexOutput,
 ) -> @location(0) vec4<f32> {

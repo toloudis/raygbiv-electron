@@ -44,7 +44,7 @@ var<uniform> uniforms: Uniforms;
 
 
 
-@stage(vertex)
+@vertex
 fn main_vs(
     in: VertexInput
 ) -> VertexOutput {
@@ -182,7 +182,7 @@ fn integrateVolume(eye_o: vec4<f32>, eye_d: vec4< f32>, tnear: f32, tfar: f32, c
     return C;
 }
 
-@stage(fragment)
+@fragment
 fn main_fs(
     in: VertexOutput
 ) -> @location(0) vec4<f32> {

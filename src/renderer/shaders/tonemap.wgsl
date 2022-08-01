@@ -7,7 +7,7 @@ struct VertexOutput {
   @location(0) vUv: vec2<f32>
 };
 
-@stage(vertex)
+@vertex
 fn main_vs(
     in: VertexInput,
 ) -> VertexOutput {
@@ -38,7 +38,7 @@ fn XYZtoRGB(xyz: vec3<f32>) -> vec3<f32> {
     return xyz * XYZ_2_RGB;
 }
 
-@stage(fragment)
+@fragment
 fn main_fs(
     in: VertexOutput,
 ) -> @location(0) vec4<f32> {
