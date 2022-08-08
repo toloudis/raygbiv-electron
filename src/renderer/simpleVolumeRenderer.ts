@@ -1,6 +1,7 @@
 import { mat4, glMatrix } from "gl-matrix";
 
 import { IRenderTarget, ISceneRenderer } from "./api";
+import { createUniformBuffer } from "./bufferUtil";
 import Camera from "./camera";
 import Scene from "./scene";
 import { SceneObject, SceneVolume } from "./sceneObject";
@@ -248,13 +249,14 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
       // lazily create shading data here
       let shadingInfo: VolumeShadingData = this.gpuScene.get(object);
       if (!shadingInfo) {
-        const uniformBuffer: GPUBuffer =
-          this.volumeShader.createUniformBuffer(data);
+        const uniformBuffer: GPUBuffer = createUniformBuffer(data, this.device);
 
         console.log(data);
         console.log(data2);
-        const uniformBuffer2: GPUBuffer =
-          this.volumeShader.createUniformBuffer(data2);
+        const uniformBuffer2: GPUBuffer = createUniformBuffer(
+          data2,
+          this.device
+        );
 
         // create sampler:
         const volSampler: GPUSampler = this.device.createSampler({

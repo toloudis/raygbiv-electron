@@ -65,6 +65,46 @@ export function createCube(options?: CubeOptions) {
   };
 }
 
+interface QuadOptions {
+  dimensions?: [number, number];
+  position?: [number, number, number];
+}
+export function createQuad(options?: QuadOptions) {
+  options = options || {};
+
+  let dimensions = options.dimensions || [1, 1];
+  let position = options.position || [0, 0, 0];
+
+  const positions = new Float32Array([
+    // front (+Z)
+    position[0] + -dimensions[0] * 0.5,
+    position[1] + -dimensions[1] * 0.5,
+    position[2],
+
+    position[0] + dimensions[0] * 0.5,
+    position[1] + -dimensions[1] * 0.5,
+    position[2],
+
+    position[0] + dimensions[0] * 0.5,
+    position[1] + dimensions[1] * 0.5,
+    position[2],
+
+    position[0] + -dimensions[0] * 0.5,
+    position[1] + dimensions[1] * 0.5,
+    position[2],
+  ]);
+
+  const indices = new Uint16Array([
+    // front
+    0, 1, 2, 2, 3, 0,
+  ]);
+
+  return {
+    positions,
+    indices,
+  };
+}
+
 export class VolumeMaker {
   /**
    * Rasterize a signed distance function into a volume of vx * vy * vz dimensions. This is a binary filling operation.

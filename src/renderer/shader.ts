@@ -7,12 +7,13 @@ class Shader {
   protected srcpath = "";
   protected vsEntry = "main_vs";
   protected fsEntry = "main_fs";
-  protected shaderModule: GPUShaderModule = null;
   protected device: GPUDevice = null;
-
-  protected bindGroupLayouts: GPUBindGroupLayout[] = [];
   protected pipelineLayout: GPUPipelineLayout = null;
-  protected vertexState: GPUVertexState = null;
+
+  // usable by renderers
+  public shaderModule: GPUShaderModule = null;
+  public bindGroupLayouts: GPUBindGroupLayout[] = [];
+  public vertexState: GPUVertexState = null;
 
   private loadShaderWGSL(shaderPath: string) {
     return fetch(new Request(shaderPath), {
@@ -43,17 +44,6 @@ class Shader {
     // javascript source.
 
     await this.loadModules();
-  }
-
-  public createUniformBuffer(uniformData: Float32Array): GPUBuffer {
-    // stick this data into a gpu buffer
-    const uniformBuffer: GPUBuffer = createGPUBuffer(
-      uniformData.buffer,
-      GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-      this.device
-    );
-
-    return uniformBuffer;
   }
 
   // TODO customize this for each shader (mesh, volume)
