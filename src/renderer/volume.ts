@@ -6,7 +6,10 @@ export default class Volume {
   private indexBuffer: GPUBuffer = null;
   private volumeBuffer: GPUTexture = null;
   private volumeBufferView: GPUTextureView = null;
+  // in pixels
   private dims: [number, number, number] = [0, 0, 0];
+  // in world units
+  private physicalDims: [number, number, number] = [0, 0, 0];
   private tiling: [number, number, number] = [0, 0, 0];
 
   constructor(
@@ -20,6 +23,7 @@ export default class Volume {
     pz: number
   ) {
     this.dims = [x, y, z];
+    this.physicalDims = [px, py, pz];
 
     this.tiling = [1, 1, 1];
     this.volumeBuffer = createVolumeTexture(
@@ -73,7 +77,12 @@ export default class Volume {
   }
 
   getDims(): [number, number, number] {
+    // TODO return copy
     return this.dims;
+  }
+  getPhysicalDims(): [number, number, number] {
+    // TODO return copy
+    return this.physicalDims;
   }
   getTiling(): [number, number, number] {
     return this.tiling;

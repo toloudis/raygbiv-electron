@@ -6,6 +6,9 @@ class Camera {
   private near = 1.0;
   private far = 100.0;
 
+  private focalDistance = 1.0;
+  private apertureSize = 0.0;
+
   private position: vec3;
   private target: vec3;
   private up: vec3;
@@ -37,6 +40,18 @@ class Camera {
   }
   public getUp(): vec3 {
     return this.up;
+  }
+  public getFov(): number {
+    return this.fov;
+  }
+  public getAspect(): number {
+    return this.aspect;
+  }
+  public getFocalDistance(): number {
+    return this.focalDistance;
+  }
+  public getApertureSize(): number {
+    return this.apertureSize;
   }
 
   public getProjectionMatrix(): mat4 {
