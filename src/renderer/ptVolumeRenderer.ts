@@ -10,7 +10,7 @@ import { VolumeShader } from "./ptVolumeShader";
 import { TonemapShader } from "./toneMapShader";
 import { PreFuseShader } from "./preFuseShader";
 import { FuseShader } from "./fuseShader";
-import Volume from "./volume";
+import { Volume } from "./volume";
 import Scene from "./scene";
 import Camera from "./camera";
 import CanvasRenderTarget from "./canvasRenderTarget";
@@ -445,16 +445,6 @@ class Renderer implements ISceneRenderer {
     this.quad_vbuf = quadBufs.vertexBuffer;
     this.quad_ibuf = quadBufs.indexBuffer;
 
-    // the tonemapping shader
-    this.tonemap_shader = new TonemapShader();
-    await this.tonemap_shader.load(device);
-    this.tonemap_pipeline = this.setuptonemappipeline(format);
-
-    // the path tracing shader
-    this.pathtrace_shader = new VolumeShader();
-    await this.pathtrace_shader.load(device);
-    this.path_trace_pipeline = this.setupvolpipeline();
-
     // the render target texture for path tracing
     this.path_trace_target = undefined;
     this.path_trace_target_view = undefined;
@@ -567,6 +557,20 @@ class Renderer implements ISceneRenderer {
     });
 
     this.do_resize(size[0], size[1]);
+  }
+
+  async initPostCtor(): Promise<void> {
+    // the tonemapping shader
+    this.tonemap_shader = new TonemapShader();
+    await this.tonemap_shader.load(this.device);
+
+    const format = navigator.gpu.getPreferredCanvasFormat();
+    this.tonemap_pipeline = this.setuptonemappipeline(format);
+
+    // the path tracing shader
+    this.pathtrace_shader = new VolumeShader();
+    await this.pathtrace_shader.load(this.device);
+    this.path_trace_pipeline = this.setupvolpipeline();
   }
 
   exposure_from_slider(e: number): number {
@@ -1114,7 +1118,7 @@ class Renderer implements ISceneRenderer {
 
     // use first 4 enabled channels
     let i = 0;
-    for (let ch in channel_state) {
+    for (let ch = 0; ch < channel_state.length; ++ch) {
       if (i >= 4) {
         break;
       }
@@ -1123,13 +1127,13 @@ class Renderer implements ISceneRenderer {
       }
       // copy channel data ch into data, spread every i
       for (let j = 0; j < sx * sy * sz; ++j) {
-        data[j * 4 + i] = this.volume.getChannel(ch)[j];
+        data[j * 4 + i] = this.volume.getChannel(ch).data[j];
       }
       i = i + 1;
     }
 
     // // defaults to rgba and unsignedbytetype so dont need to supply format this time.
-    this.volumedata_4channel = data;
+    //    this.volumedata_4channel = data;
 
     // ship data up to volume texture for pathtrace
     this.device.queue.writeTexture(

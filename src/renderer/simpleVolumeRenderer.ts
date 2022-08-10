@@ -238,9 +238,9 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
         // maxProject: i32;
         0,
         // ATLAS_X
-        object.volume.getTiling()[0],
+        1, //object.volume.getTiling()[0],
         // ATLAS_Y
-        object.volume.getTiling()[1],
+        1, //object.volume.getTiling()[1],
         // padding
         0,
       ]);
@@ -271,7 +271,7 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
         const shaderuniformbindgroup = this.volumeShader.createShaderBindGroup(
           uniformBuffer,
           volSampler,
-          object.volume.getVolumeBufferView(),
+          object.volume.getChannel(0).textureView,
           uniformBuffer2
         );
 
@@ -371,14 +371,11 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
 
       this.passEncoder.setPipeline(this.volumeShaderPipeline);
       this.passEncoder.setBindGroup(0, shadingInfo.shaderuniformbindgroup);
-      this.passEncoder.setVertexBuffer(
-        0,
-        object.getVolume().getPositionBuffer()
-      );
+      this.passEncoder.setVertexBuffer(0, object.getVolume().vertex_buffer);
       //this.passEncoder.setVertexBuffer(1, object.getColorBuffer());
       this.passEncoder.setIndexBuffer(
-        object.getVolume().getIndexBuffer(),
-        object.getVolume().getIndexFormat()
+        object.getVolume().index_buffer,
+        "uint16" //object.getVolume().getIndexFormat()
       );
       this.passEncoder.drawIndexed(3 * 2 * 6, 1, 0, 0, 0);
     }

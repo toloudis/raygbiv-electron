@@ -4,7 +4,7 @@ import Mesh from "./mesh";
 import MyRenderer from "./renderer";
 import SimpleVolumeRenderer from "./simpleVolumeRenderer";
 import CanvasRenderTarget from "./canvasRenderTarget";
-import Volume from "./volume";
+import { Volume, VolumeData } from "./volume";
 
 class Graphics implements IGraphics {
   private adapter: GPUAdapter = null;
@@ -66,7 +66,10 @@ class Graphics implements IGraphics {
     py: number,
     pz: number
   ): Volume {
-    return new Volume(this.device, volumedata, x, y, z, px, py, pz);
+    const volume = new Volume([pz, py, px], [z, y, x], this.device);
+    const c = new VolumeData(volumedata, [z, y, x], this.device);
+    volume.channels.push(c);
+    return volume;
   }
 
   private async initWebGPU(): Promise<void> {

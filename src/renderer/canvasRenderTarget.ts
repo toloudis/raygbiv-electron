@@ -62,7 +62,9 @@ class CanvasRenderTarget implements IRenderTarget {
 
     this.context.configure({
       device: this.device,
-      format: "bgra8unorm", //context.getSwapChainPreferredFormat(this.device.adapter),
+      //format: "bgra8unorm", //context.getSwapChainPreferredFormat(this.device.adapter),
+      format: navigator.gpu.getPreferredCanvasFormat(),
+
       usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
       // size: {
       //   width: entry.contentBoxSize[0].inlineSize,

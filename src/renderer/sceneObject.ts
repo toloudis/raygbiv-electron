@@ -3,7 +3,7 @@ import Scene from "./scene";
 import { mat4 } from "gl-matrix";
 
 import Mesh from "./mesh";
-import Volume from "./volume";
+import { Volume } from "./volume";
 
 interface SceneObject {
   getTransform(): mat4;

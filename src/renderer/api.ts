@@ -1,7 +1,7 @@
 import Mesh from "./mesh";
 import Camera from "./camera";
 import Scene from "./scene";
-import Volume from "./volume";
+import { Volume } from "./volume";
 
 enum EPixelFormat {
   RGBA_F32,
