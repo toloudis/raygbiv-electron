@@ -397,7 +397,10 @@ export class Volume {
       size: [this.pixel_dims[2], this.pixel_dims[1], this.pixel_dims[0]],
       dimension: "3d",
       format: "rgba8unorm",
-      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.STORAGE_BINDING,
+      usage:
+        GPUTextureUsage.TEXTURE_BINDING |
+        GPUTextureUsage.STORAGE_BINDING |
+        GPUTextureUsage.COPY_SRC,
       label: "volume fused texture rgba8unorm pong",
     });
     this.fused_texture_view = this.fused_texture.createView();
@@ -430,11 +433,13 @@ export class Volume {
       const lut = this.channels[i].histogram.lutGenerator_percentiles(50, 98);
       const clut = lut.lut;
 
+      const clut_f = new Float32Array(clut.length);
+      for (let j = 0; j < clut.length; ++j) {
+        clut_f[j] = clut[j];
+      }
       const buf = createGPUBuffer(
-        clut,
-        GPUBufferUsage.UNIFORM |
-          GPUBufferUsage.MAP_WRITE |
-          GPUBufferUsage.COPY_SRC,
+        clut_f,
+        GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         device
       );
       this.luts.push(buf);
@@ -442,14 +447,15 @@ export class Volume {
       const texture = device.createTexture({
         label: "lut texture",
         size: [256, 1, 1],
-        format: "rgba32float", // lut is uint!! FIXME TODO FIX
+        format: "rgba32float", // lut is uint8!! FIXME TODO FIX
+        //        format: "rgba32float", // lut is uint8!! FIXME TODO FIX
         usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.TEXTURE_BINDING,
       });
       device.queue.writeTexture(
         { texture: texture, origin: [0, 0, 0], mipLevel: 0 },
-        clut,
+        clut_f,
         // write the whole clut as one row
-        { bytesPerRow: clut.byteLength, rowsPerImage: 1 },
+        { bytesPerRow: clut_f.byteLength, rowsPerImage: 1 },
         [256, 1, 1]
       );
       this.lut_textures.push(texture);
@@ -468,18 +474,28 @@ export class Volume {
       98
     );
     const clut = lut.lut;
+    // fill lut with rgb
+    for (let i = 0; i < clut.length / 4; ++i) {
+      clut[i * 4 + 0] *= rgb[0];
+      clut[i * 4 + 1] *= rgb[1];
+      clut[i * 4 + 2] *= rgb[2];
+    }
+    const clut_f = new Float32Array(clut.length);
+    for (let j = 0; j < clut.length; ++j) {
+      clut_f[j] = clut[j];
+    }
 
     //this.luts[channel].map_write(clut);
-    device.queue.writeBuffer(this.luts[channel], 0, clut);
+    device.queue.writeBuffer(this.luts[channel], 0, clut_f);
     device.queue.writeTexture(
       {
         texture: this.lut_textures[channel],
         origin: [0, 0, 0],
         mipLevel: 0,
       },
-      clut,
+      clut_f,
       // write the whole clut as one row
-      { bytesPerRow: clut.byteLength, rowsPerImage: 1 },
+      { bytesPerRow: clut_f.byteLength, rowsPerImage: 1 },
       [256, 1, 1]
     );
   }
@@ -488,7 +504,7 @@ export class Volume {
     device: GPUDevice,
     command_encoder: GPUCommandEncoder,
     channel_state: ChannelState[]
-  ) {
+  ): GPUTextureView {
     const nz = this.pixel_dims[0];
     const ny = this.pixel_dims[1];
     const nx = this.pixel_dims[2];
@@ -514,6 +530,12 @@ export class Volume {
     // Create bindings and binding layouts
     const bind_groups: GPUBindGroup[] = [];
     for (let i = 0; i < fusechannels.length; ++i) {
+      if (!this.channels[fusechannels[i]].textureView) {
+        console.log(`Channel ${fusechannels[i]} has no texture view`);
+      }
+      if (!this.luts[fusechannels[i]]) {
+        console.log(`LUT ${fusechannels[i]} has no buffer`);
+      }
       const bindings0: GPUBindGroupEntry[] = [
         { binding: 0, resource: pingpong[i % 2] },
         { binding: 1, resource: this.channels[fusechannels[i]].textureView },
@@ -528,6 +550,7 @@ export class Volume {
         },
       ];
       const bind_group0 = device.createBindGroup({
+        label: `fuse bind group ${i} for channel ${fusechannels[i]}`,
         layout: this.fuse_bind_group_layout,
         entries: bindings0,
       });
@@ -543,15 +566,23 @@ export class Volume {
     });
 
     const compute_pass = command_encoder.beginComputePass();
+
+    // 1. clear
     compute_pass.setPipeline(this.prefuse_compute_pipeline);
     compute_pass.setBindGroup(0, clearbind_group);
     compute_pass.dispatchWorkgroups(nx, ny, nz);
+
+    // 2. fuse all channels in fusechannels
     compute_pass.setPipeline(this.fuse_compute_pipeline);
     for (let i = 0; i < fusechannels.length; ++i) {
       compute_pass.setBindGroup(0, bind_groups[i]);
       compute_pass.dispatchWorkgroups(nx, ny, nz);
     }
     compute_pass.end();
+
+    // return target of last draw
+    return pingpong[(fusechannels.length - 1) % 2];
+
     // device.queue.submit([command_encoder.finish()])
 
     // # optionally, for debugging!!

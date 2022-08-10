@@ -3,7 +3,7 @@ import Scene from "./scene";
 import { mat4 } from "gl-matrix";
 
 import Mesh from "./mesh";
-import { Volume } from "./volume";
+import { ChannelState, Volume } from "./volume";
 
 interface SceneObject {
   getTransform(): mat4;
@@ -30,10 +30,17 @@ class SceneMesh implements SceneObject {
 class SceneVolume implements SceneObject {
   public volume: Volume;
   public transform: mat4;
+  // TODO what happens when a new channel gets added to the Volume?
+  public channel_state: ChannelState[];
 
   constructor(volume: Volume, transform: mat4) {
     this.volume = volume;
     this.transform = transform;
+
+    this.channel_state = [];
+    for (let i = 0; i < this.volume.channels.length; i++) {
+      this.channel_state.push(new ChannelState(i < 3, [1, 1, 1], 0, 255));
+    }
   }
 
   getVolume(): Volume {

@@ -7,6 +7,7 @@ import Scene from "./scene";
 import { SceneObject, SceneVolume } from "./sceneObject";
 import { VolumeShader, Shader } from "./shader";
 import CanvasRenderTarget from "./canvasRenderTarget";
+import { ChannelState } from "./volume";
 
 interface VolumeShadingData {
   shaderuniformbindgroup: GPUBindGroup;
@@ -116,6 +117,25 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
   ): void {
     const renderTarget = target as CanvasRenderTarget;
 
+    // update all LUTs if anything changed (enabled, color, or transfer function)
+    for (let j = 0; j < scene.volumes.length; ++j) {
+      const channelstate = scene.volumes[j].channel_state;
+      for (let i = 0; i < channelstate.length; ++i) {
+        if (channelstate[i].enabled) {
+          // # and if channel state is dirty!!!!
+          // # also only fuse if channel state was dirty, i.e. if luts updated.
+          // # minor optimization maybe.
+          scene.volumes[0].volume.update_lut(
+            this.device,
+            i,
+            channelstate[i].imin,
+            channelstate[i].imax,
+            channelstate[i].rgb
+          );
+        }
+      }
+    }
+
     // Write and submit commands to queue
     const colorAttachment: GPURenderPassColorAttachment = {
       view: renderTarget.getColorTextureView(),
@@ -161,6 +181,14 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
       if (!(object instanceof SceneVolume)) {
         continue;
       }
+
+      // if fuse is needed:
+      object.volume.fuse_channels_gpu(
+        this.device,
+        this.commandEncoder,
+        object.channel_state
+      );
+
       const viewModel = mat4.mul(
         mat4.create(),
         camera.getViewMatrix(),
