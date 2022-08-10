@@ -324,10 +324,8 @@ export class Volume {
   clearfuseshader: PreFuseShader;
 
   fuse_bind_group_layout: GPUBindGroupLayout;
-  fuse_pipeline_layout: GPUPipelineLayout;
   fuse_compute_pipeline: GPUComputePipeline;
   prefuse_bind_group_layout: GPUBindGroupLayout;
-  prefuse_pipeline_layout: GPUPipelineLayout;
   prefuse_compute_pipeline: GPUComputePipeline;
 
   constructor(
@@ -341,7 +339,7 @@ export class Volume {
     this.physical_dims = physical_dims;
     this.pixel_dims = pixel_dims;
     this.create_geometry(device);
-    this.transform = mat4.fromScaling(this.transform, [
+    this.transform = mat4.fromScaling(mat4.create(), [
       physical_dims[2],
       physical_dims[1],
       physical_dims[0],
@@ -404,22 +402,12 @@ export class Volume {
     });
     this.fused_texture_view = this.fused_texture.createView();
     this.fused_texture_temp_view = this.fused_texture_temp.createView();
+
     this.fuse_bind_group_layout = this.fuseshader.bindGroupLayouts[0];
-    this.fuse_pipeline_layout = this.fuseshader.getPipelineLayout();
-    this.fuse_compute_pipeline = device.createComputePipeline({
-      layout: this.fuse_pipeline_layout,
-      compute: { module: this.fuseshader.shaderModule, entryPoint: "main" },
-    });
+    this.fuse_compute_pipeline = this.fuseshader.computePipeline;
 
     this.prefuse_bind_group_layout = this.clearfuseshader.bindGroupLayouts[0];
-    this.prefuse_pipeline_layout = this.clearfuseshader.getPipelineLayout();
-    this.prefuse_compute_pipeline = device.createComputePipeline({
-      layout: this.prefuse_pipeline_layout,
-      compute: {
-        module: this.clearfuseshader.shaderModule,
-        entryPoint: "prefill",
-      },
-    });
+    this.prefuse_compute_pipeline = this.clearfuseshader.computePipeline;
   }
 
   setup_channel_luts(device: GPUDevice) {

@@ -19,8 +19,10 @@ class Graphics implements IGraphics {
       }
       await this.initWebGPU();
       console.log("WebGPU initialized.");
-      console.log("ADAPTER:  " + this.adapter.name);
-      console.log("FEATURES :  ");
+      console.log("ADAPTER INFO :  ");
+      const adapterInfo = await this.adapter.requestAdapterInfo();
+      console.log(adapterInfo);
+      console.log("ADAPTER FEATURES :  ");
 
       this.adapter.features.forEach((ext) => console.log("    " + ext));
     } catch (e) {

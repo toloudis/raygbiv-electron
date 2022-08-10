@@ -36,7 +36,7 @@ class PreFuseShader extends Shader {
           binding: 0,
           visibility: GPUShaderStage.COMPUTE,
           storageTexture: {
-            access: "writeOnly" as GPUStorageTextureAccess,
+            access: "write-only" as GPUStorageTextureAccess,
             format: "rgba8unorm" as GPUTextureFormat,
             viewDimension: "3d" as GPUTextureViewDimension,
           },
@@ -45,7 +45,7 @@ class PreFuseShader extends Shader {
           binding: 1,
           visibility: GPUShaderStage.COMPUTE,
           storageTexture: {
-            access: "writeOnly" as GPUStorageTextureAccess,
+            access: "write-only" as GPUStorageTextureAccess,
             format: "rgba8unorm" as GPUTextureFormat,
             viewDimension: "3d" as GPUTextureViewDimension,
           },
@@ -108,5 +108,5 @@ export { PreFuseShader };
 // )
 // self.prefuse_compute_pipeline = device.create_compute_pipeline(
 //     layout=self.prefuse_pipeline_layout,
-//     compute={"module": self.clearfuseshader, "entry_point": "prefill"},
+//     compute={"module": self.clearfuseshader, "entry_point": "main"},
 // )

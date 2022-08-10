@@ -58,7 +58,9 @@ class CanvasRenderTarget implements IRenderTarget {
     this.canvas.width = this.renderWidth;
     this.canvas.height = this.renderHeight;
 
-    this.context = this.canvas.getContext("webgpu") as GPUCanvasContext;
+    this.context = this.canvas.getContext(
+      "webgpu"
+    ) as unknown as GPUCanvasContext;
 
     this.context.configure({
       device: this.device,
