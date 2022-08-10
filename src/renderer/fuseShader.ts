@@ -16,12 +16,14 @@ class FuseShader extends Shader {
 
     await this.loadModules();
 
-    this.createBindGroupLayouts(device);
+    this.bindGroupLayouts = this.createBindGroupLayouts(device);
     this.pipelineLayout = device.createPipelineLayout({
+      label: "fuse pipeline layout",
       bindGroupLayouts: this.bindGroupLayouts,
     });
 
     this.computePipeline = device.createComputePipeline({
+      label: "fuse compute pipeline",
       layout: this.pipelineLayout,
       compute: { module: this.shaderModule, entryPoint: "main" },
     });

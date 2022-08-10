@@ -45,7 +45,7 @@ export function createUniformBuffer(
 ): GPUBuffer {
   const uniform_buffer = createGPUBuffer(
     initData,
-    GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_WRITE,
+    GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST, // | GPUBufferUsage.MAP_WRITE,
     device
   );
   return uniform_buffer;

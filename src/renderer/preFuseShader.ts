@@ -16,12 +16,15 @@ class PreFuseShader extends Shader {
 
     await this.loadModules();
 
-    this.createBindGroupLayouts(device);
+    this.bindGroupLayouts = this.createBindGroupLayouts(device);
     this.pipelineLayout = device.createPipelineLayout({
+      label: "pre-fuse pipeline layout",
+
       bindGroupLayouts: this.bindGroupLayouts,
     });
 
     this.computePipeline = device.createComputePipeline({
+      label: "pre-fuse compute pipeline",
       layout: this.pipelineLayout,
       compute: { module: this.shaderModule, entryPoint: "main" },
     });
