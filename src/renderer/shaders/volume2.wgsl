@@ -52,7 +52,7 @@ struct FragUBO {
 [[group(0), binding(2)]] var textureAtlas: texture_2d<f32>;
 [[group(0), binding(3)]] var<uniform> fraguniforms: FragUBO;
 
-let M_PI = 3.14159265358979323846;
+const M_PI = 3.14159265358979323846;
 
 fn powf(a: f32, b: f32) -> f32 { return pow(a, b); }
 
