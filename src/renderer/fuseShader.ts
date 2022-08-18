@@ -32,7 +32,7 @@ class FuseShader extends Shader {
   }
 
   private createBindGroupLayouts(device: GPUDevice): GPUBindGroupLayout[] {
-    const bindGroupLayout = device.createBindGroupLayout({
+    const bindGroupLayout0 = device.createBindGroupLayout({
       entries: [
         {
           binding: 0,
@@ -51,8 +51,12 @@ class FuseShader extends Shader {
             viewDimension: "3d" as GPUTextureViewDimension,
           },
         },
+      ],
+    });
+    const bindGroupLayout1 = device.createBindGroupLayout({
+      entries: [
         {
-          binding: 2,
+          binding: 0,
           visibility: GPUShaderStage.COMPUTE,
           texture: {
             sampleType: "float" as GPUTextureSampleType,
@@ -60,7 +64,7 @@ class FuseShader extends Shader {
           },
         },
         {
-          binding: 3,
+          binding: 1,
           visibility: GPUShaderStage.COMPUTE,
           buffer: {
             // input buffer or output buffer
@@ -70,7 +74,7 @@ class FuseShader extends Shader {
         },
       ],
     });
-    return [bindGroupLayout];
+    return [bindGroupLayout0, bindGroupLayout1];
   }
 }
 export { FuseShader };

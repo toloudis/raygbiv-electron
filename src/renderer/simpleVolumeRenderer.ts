@@ -37,6 +37,8 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
 
   private gpuScene: Map<SceneObject, VolumeShadingData>;
 
+  private firstTimeLuts = true;
+
   constructor(device: GPUDevice) {
     this.device = device;
     this.settings = {
@@ -116,24 +118,26 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
     simulationTime: number
   ): void {
     const renderTarget = target as CanvasRenderTarget;
-
-    // update all LUTs if anything changed (enabled, color, or transfer function)
-    for (let j = 0; j < scene.volumes.length; ++j) {
-      const channelstate = scene.volumes[j].channel_state;
-      for (let i = 0; i < channelstate.length; ++i) {
-        if (channelstate[i].enabled) {
-          // # and if channel state is dirty!!!!
-          // # also only fuse if channel state was dirty, i.e. if luts updated.
-          // # minor optimization maybe.
-          scene.volumes[0].volume.update_lut(
-            this.device,
-            i,
-            channelstate[i].imin,
-            channelstate[i].imax,
-            channelstate[i].rgb
-          );
+    if (this.firstTimeLuts === true) {
+      // update all LUTs if anything changed (enabled, color, or transfer function)
+      for (let j = 0; j < scene.volumes.length; ++j) {
+        const channelstate = scene.volumes[j].channel_state;
+        for (let i = 0; i < channelstate.length; ++i) {
+          if (channelstate[i].enabled) {
+            // # and if channel state is dirty!!!!
+            // # also only fuse if channel state was dirty, i.e. if luts updated.
+            // # minor optimization maybe.
+            scene.volumes[0].volume.update_lut(
+              this.device,
+              i,
+              channelstate[i].imin,
+              channelstate[i].imax,
+              channelstate[i].rgb
+            );
+          }
         }
       }
+      this.firstTimeLuts = false;
     }
 
     // Write and submit commands to queue

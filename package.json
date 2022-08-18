@@ -40,7 +40,7 @@
     "@tweakpane/core": "^1.1.0",
     "@webgpu/types": "^0.1.21",
     "electron-builder": "^23.3.3",
-    "electron-nightly": "^22.0.0-nightly.20220810",
+    "electron-nightly": "^22.0.0-nightly.20220816",
     "eslint": "^8.21.0",
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.5.0",

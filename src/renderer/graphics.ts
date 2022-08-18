@@ -71,7 +71,6 @@ class Graphics implements IGraphics {
     const volume = new Volume([pz, py, px], [z, y, x], this.device);
     const c = new VolumeData(volumedata, [z, y, x], this.device);
     volume.channels.push(c);
-    volume.setup_channel_luts(this.device);
 
     return volume;
   }

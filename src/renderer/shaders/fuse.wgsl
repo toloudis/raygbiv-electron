@@ -6,10 +6,11 @@ struct FuseLUT {
 };
 
 @group(0) @binding(0) var dest : texture_storage_3d<rgba8unorm, write>;
-@group(0) @binding(1) var src : texture_3d<f32>;
-@group(0) @binding(2) var accum : texture_3d<f32>;
+@group(0) @binding(1) var accum : texture_3d<f32>;
+
+@group(1) @binding(0) var src : texture_3d<f32>;
 // should be texture+sampler?
-@group(0) @binding(3) var<uniform> lut: FuseLUT;
+@group(1) @binding(1) var<uniform> lut: FuseLUT;
 
 @compute @workgroup_size(1, 1, 1)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {

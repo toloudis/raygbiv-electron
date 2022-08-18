@@ -305,6 +305,7 @@ function createTiledVolumeTexture(
 
 export class Volume {
   channels: VolumeData[];
+  device: GPUDevice;
   luts: GPUBuffer[];
   lut_textures: GPUTexture[];
   // ZYX
@@ -323,10 +324,14 @@ export class Volume {
   fuseshader: FuseShader;
   clearfuseshader: PreFuseShader;
 
-  fuse_bind_group_layout: GPUBindGroupLayout;
+  fuse_bind_group0_layout: GPUBindGroupLayout;
+  fuse_bind_group1_layout: GPUBindGroupLayout;
   fuse_compute_pipeline: GPUComputePipeline;
   prefuse_bind_group_layout: GPUBindGroupLayout;
   prefuse_compute_pipeline: GPUComputePipeline;
+  clearbind_group: GPUBindGroup;
+  pingpongBindGroups: GPUBindGroup[];
+  fuseChannelBindGroups: GPUBindGroup[];
 
   constructor(
     physical_dims: [number, number, number],
@@ -344,7 +349,7 @@ export class Volume {
       physical_dims[1],
       physical_dims[0],
     ]);
-    this.prepare_fuse(device);
+    this.device = device;
   }
 
   getDims(): [number, number, number] {
@@ -378,12 +383,12 @@ export class Volume {
     );
   }
 
-  async prepare_fuse(device: GPUDevice) {
+  async prepare_fuse() {
     this.fuseshader = new FuseShader();
-    await this.fuseshader.load(device);
+    await this.fuseshader.load(this.device);
     this.clearfuseshader = new PreFuseShader();
-    await this.clearfuseshader.load(device);
-    this.fused_texture = device.createTexture({
+    await this.clearfuseshader.load(this.device);
+    this.fused_texture = this.device.createTexture({
       size: [this.pixel_dims[2], this.pixel_dims[1], this.pixel_dims[0]],
       dimension: "3d",
       format: "rgba8unorm",
@@ -393,7 +398,7 @@ export class Volume {
         GPUTextureUsage.COPY_SRC,
       label: "volume fused texture rgba8unorm ping",
     });
-    this.fused_texture_temp = device.createTexture({
+    this.fused_texture_temp = this.device.createTexture({
       size: [this.pixel_dims[2], this.pixel_dims[1], this.pixel_dims[0]],
       dimension: "3d",
       format: "rgba8unorm",
@@ -406,14 +411,45 @@ export class Volume {
     this.fused_texture_view = this.fused_texture.createView();
     this.fused_texture_temp_view = this.fused_texture_temp.createView();
 
-    this.fuse_bind_group_layout = this.fuseshader.bindGroupLayouts[0];
+    this.fuse_bind_group0_layout = this.fuseshader.bindGroupLayouts[0];
+    this.fuse_bind_group1_layout = this.fuseshader.bindGroupLayouts[1];
     this.fuse_compute_pipeline = this.fuseshader.computePipeline;
 
     this.prefuse_bind_group_layout = this.clearfuseshader.bindGroupLayouts[0];
     this.prefuse_compute_pipeline = this.clearfuseshader.computePipeline;
+
+    const clearbindings: GPUBindGroupEntry[] = [
+      { binding: 0, resource: this.fused_texture_view },
+      { binding: 1, resource: this.fused_texture_temp_view },
+    ];
+    this.clearbind_group = this.device.createBindGroup({
+      layout: this.prefuse_bind_group_layout,
+      entries: clearbindings,
+    });
+
+    const pingpongBindings0: GPUBindGroupEntry[] = [
+      { binding: 0, resource: this.fused_texture_view },
+      { binding: 1, resource: this.fused_texture_temp_view },
+    ];
+    const pingpongBindings1: GPUBindGroupEntry[] = [
+      { binding: 0, resource: this.fused_texture_temp_view },
+      { binding: 1, resource: this.fused_texture_view },
+    ];
+    const bind_group0 = this.device.createBindGroup({
+      //label: `fuse bind group0 ${i} for channel ${fusechannels[i]}`,
+      layout: this.fuse_bind_group0_layout,
+      entries: pingpongBindings0,
+    });
+    const bind_group1 = this.device.createBindGroup({
+      //label: `fuse bind group0 ${i} for channel ${fusechannels[i]}`,
+      layout: this.fuse_bind_group0_layout,
+      entries: pingpongBindings1,
+    });
+    this.pingpongBindGroups = [bind_group0, bind_group1];
+    this.fuseChannelBindGroups = [];
   }
 
-  setup_channel_luts(device: GPUDevice) {
+  setup_channel_luts() {
     this.luts = [];
     this.lut_textures = [];
     const colors = [
@@ -440,18 +476,18 @@ export class Volume {
       const buf = createGPUBuffer(
         clut_f,
         GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        device
+        this.device
       );
       this.luts.push(buf);
 
-      const texture = device.createTexture({
+      const texture = this.device.createTexture({
         label: "lut texture",
         size: [256, 1, 1],
         format: "rgba32float", // lut is uint8!! FIXME TODO FIX
         //        format: "rgba32float", // lut is uint8!! FIXME TODO FIX
         usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.TEXTURE_BINDING,
       });
-      device.queue.writeTexture(
+      this.device.queue.writeTexture(
         { texture: texture, origin: [0, 0, 0], mipLevel: 0 },
         clut_f,
         // write the whole clut as one row
@@ -459,6 +495,25 @@ export class Volume {
         [256, 1, 1]
       );
       this.lut_textures.push(texture);
+
+      // set up fuse bind group for this channel
+      const bindings1: GPUBindGroupEntry[] = [
+        { binding: 0, resource: this.channels[i].textureView },
+        {
+          binding: 1,
+          resource: {
+            buffer: this.luts[i],
+            offset: 0,
+            size: this.luts[i].size,
+          },
+        },
+      ];
+      const bind_group1 = this.device.createBindGroup({
+        label: `fuse bind group1 for channel ${i}`,
+        layout: this.fuse_bind_group1_layout,
+        entries: bindings1,
+      });
+      this.fuseChannelBindGroups.push(bind_group1);
     }
   }
 
@@ -518,70 +573,30 @@ export class Volume {
 
     // generate the necessary bind groups for this fuse.
 
-    let pingpong: GPUTextureView[] = [
-      this.fused_texture_view,
-      this.fused_texture_temp_view,
-    ];
-    if (fusechannels.length % 2 == 0) {
-      pingpong = [this.fused_texture_temp_view, this.fused_texture_view];
-    } else {
-      pingpong = [this.fused_texture_view, this.fused_texture_temp_view];
-    }
-    // Create bindings and binding layouts
-    const bind_groups: GPUBindGroup[] = [];
-    for (let i = 0; i < fusechannels.length; ++i) {
-      if (!this.channels[fusechannels[i]].textureView) {
-        console.log(`Channel ${fusechannels[i]} has no texture view`);
-      }
-      if (!this.luts[fusechannels[i]]) {
-        console.log(`LUT ${fusechannels[i]} has no buffer`);
-      }
-      const bindings0: GPUBindGroupEntry[] = [
-        { binding: 0, resource: pingpong[i % 2] },
-        { binding: 1, resource: this.channels[fusechannels[i]].textureView },
-        { binding: 2, resource: pingpong[(i + 1) % 2] },
-        {
-          binding: 3,
-          resource: {
-            buffer: this.luts[fusechannels[i]],
-            offset: 0,
-            size: this.luts[fusechannels[i]].size,
-          },
-        },
-      ];
-      const bind_group0 = device.createBindGroup({
-        label: `fuse bind group ${i} for channel ${fusechannels[i]}`,
-        layout: this.fuse_bind_group_layout,
-        entries: bindings0,
-      });
-      bind_groups.push(bind_group0);
-    }
-    const clearbindings: GPUBindGroupEntry[] = [
-      { binding: 0, resource: this.fused_texture_view },
-      { binding: 1, resource: this.fused_texture_temp_view },
-    ];
-    const clearbind_group = device.createBindGroup({
-      layout: this.prefuse_bind_group_layout,
-      entries: clearbindings,
-    });
-
     const compute_pass = command_encoder.beginComputePass();
 
     // 1. clear
     compute_pass.setPipeline(this.prefuse_compute_pipeline);
-    compute_pass.setBindGroup(0, clearbind_group);
+    compute_pass.setBindGroup(0, this.clearbind_group);
     compute_pass.dispatchWorkgroups(nx, ny, nz);
 
     // 2. fuse all channels in fusechannels
     compute_pass.setPipeline(this.fuse_compute_pipeline);
     for (let i = 0; i < fusechannels.length; ++i) {
-      compute_pass.setBindGroup(0, bind_groups[i]);
+      compute_pass.setBindGroup(0, this.pingpongBindGroups[i % 2]);
+      compute_pass.setBindGroup(1, this.fuseChannelBindGroups[fusechannels[i]]);
       compute_pass.dispatchWorkgroups(nx, ny, nz);
     }
     compute_pass.end();
 
     // return target of last draw
-    return pingpong[(fusechannels.length - 1) % 2];
+    // see bind groups above
+    // TODO confirm this is correct
+    if (fusechannels.length % 2 == 0) {
+      return this.fused_texture_view;
+    } else {
+      return this.fused_texture_temp_view;
+    }
 
     // device.queue.submit([command_encoder.finish()])
 

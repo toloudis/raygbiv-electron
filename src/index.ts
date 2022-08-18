@@ -56,6 +56,8 @@ graphics
     const voldata = VolumeMaker.createTorus(256, 256, 256, 24, 16);
     //const voldata = VolumeMaker.createVolume(256, 256, 256, (x, y, z) => -1);
     const myVol = graphics.createVolume(voldata, 256, 256, 256, 1.0, 1.0, 1.0);
+    await myVol.prepare_fuse();
+    myVol.setup_channel_luts();
 
     const mOrigin = mat4.fromTranslation(
       mat4.create(),
