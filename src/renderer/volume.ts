@@ -466,8 +466,8 @@ export class Volume {
     for (let i = 0; i < this.channels.length; ++i) {
       const random_color = colors[i % colors.length]; // list(np.random.choice(range(255), size=4) / 255.0)
       random_color[3] = 1.0;
-      const lut = this.channels[i].histogram.lutGenerator_minMax(0.1, 0.9);
-      //      const lut = this.channels[i].histogram.lutGenerator_percentiles(50, 98);
+      //const lut = this.channels[i].histogram.lutGenerator_minMax(0.1, 0.9);
+      const lut = this.channels[i].histogram.lutGenerator_percentiles(50, 98);
 
       const clut = lut.lut;
 
@@ -528,10 +528,11 @@ export class Volume {
     imax: number,
     rgb: [number, number, number]
   ) {
-    const lut = this.channels[channel].histogram.lutGenerator_percentiles(
-      50,
-      98
-    );
+    // const lut = this.channels[channel].histogram.lutGenerator_percentiles(
+    //   50,
+    //   98
+    // );
+    const lut = this.channels[channel].histogram.lutGenerator_minMax(0.1, 0.9);
     const clut = lut.lut;
     // fill lut with rgb
     for (let i = 0; i < clut.length / 4; ++i) {
@@ -541,7 +542,7 @@ export class Volume {
     }
     const clut_f = new Float32Array(clut.length);
     for (let j = 0; j < clut.length; ++j) {
-      clut_f[j] = clut[j];
+      clut_f[j] = clut[j] / 255.0;
     }
 
     //this.luts[channel].map_write(clut);

@@ -23,7 +23,7 @@ fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
 
     // apply lut to intensity:
     var pix : vec4<f32> = lut.lookup[i32(intensity * 255.0)];
-    //pix = pix * intensity;
+    pix = vec4<f32>(pix.xyz * pix.w, pix.w);
     // combine
     pix = max(cur, pix);
 
