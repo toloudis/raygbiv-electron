@@ -3,6 +3,7 @@ import Mesh from "./mesh";
 
 import MyRenderer from "./renderer";
 import SimpleVolumeRenderer from "./simpleVolumeRenderer";
+import { PTVolumeRenderer } from "./ptVolumeRenderer";
 import CanvasRenderTarget from "./canvasRenderTarget";
 import { Volume, VolumeData } from "./volume";
 
@@ -46,6 +47,11 @@ class Graphics implements IGraphics {
 
   async createSimpleVolumeRenderer(): Promise<ISceneRenderer> {
     const r = new SimpleVolumeRenderer(this.device);
+    await r.initPostCtor();
+    return r;
+  }
+  async createPTVolumeRenderer(): Promise<ISceneRenderer> {
+    const r = new PTVolumeRenderer(this.device);
     await r.initPostCtor();
     return r;
   }

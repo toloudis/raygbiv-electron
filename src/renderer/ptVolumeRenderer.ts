@@ -28,6 +28,18 @@ class CameraBuffer {
   apertureSize: number;
   isPerspective: number;
 
+  constructor() {
+    this.from = vec3.fromValues(0, 0, 0);
+    this.U = vec3.fromValues(0, 0, 0);
+    this.V = vec3.fromValues(0, 0, 0);
+    this.N = vec3.fromValues(0, 0, 0);
+    this.screen = vec4.fromValues(0, 0, 0, 0);
+    this.invScreen = vec2.fromValues(0, 0);
+    this.focalDistance = 1.0;
+    this.apertureSize = 0.0;
+    this.isPerspective = 1.0;
+  }
+
   sizeBytes(): number {
     return this.toBuffer().byteLength;
   }
@@ -87,6 +99,28 @@ class LightBuffer {
   colorMiddle: vec3;
   colorBottom: vec3;
 
+  constructor() {
+    this.theta = 0.0;
+    this.phi = 0.0;
+    this.width = 0.0;
+    this.halfWidth = 0.0;
+    this.height = 0.0;
+    this.halfHeight = 0.0;
+    this.distance = 0.0;
+    this.skyRadius = 0.0;
+    this.area = 0.0;
+    this.areaPdf = 0.0;
+    this.T = 0.0;
+    this.P = vec3.fromValues(0, 0, 0);
+    this.target = vec3.fromValues(0, 0, 0);
+    this.N = vec3.fromValues(0, 0, 0);
+    this.U = vec3.fromValues(0, 0, 0);
+    this.V = vec3.fromValues(0, 0, 0);
+    this.color = vec3.fromValues(0, 0, 0);
+    this.colorTop = vec3.fromValues(0, 0, 0);
+    this.colorMiddle = vec3.fromValues(0, 0, 0);
+    this.colorBottom = vec3.fromValues(0, 0, 0);
+  }
   sizeBytes(): number {
     return this.toBuffer().byteLength;
   }
@@ -160,6 +194,22 @@ class GlobalParamsBuffer {
   gGradientFactor: number;
   uShowLights: number;
 
+  constructor() {
+    this.gClippedAaBbMin = vec3.fromValues(0, 0, 0);
+    this.gClippedAaBbMax = vec3.fromValues(0, 0, 0);
+    this.gDensityScale = 0;
+    this.gStepSize = 0;
+    this.gStepSizeShadow = 0;
+    this.gInvAaBbSize = vec3.fromValues(0, 0, 0);
+    this.g_nChannels = 0;
+    this.gShadingType = 0;
+    this.gGradientDeltaX = vec3.fromValues(0, 0, 0);
+    this.gGradientDeltaY = vec3.fromValues(0, 0, 0);
+    this.gGradientDeltaZ = vec3.fromValues(0, 0, 0);
+    this.gInvGradientDelta = 0;
+    this.gGradientFactor = 0;
+    this.uShowLights = 0;
+  }
   sizeBytes(): number {
     return this.toBuffer().byteLength;
   }
@@ -213,6 +263,31 @@ class ChannelsBuffer {
   g_diffuse: [vec4, vec4, vec4, vec4];
   g_specular: [vec4, vec4, vec4, vec4];
   g_roughness: vec4;
+
+  constructor() {
+    this.g_intensityMax = vec4.fromValues(0, 0, 0, 0);
+    this.g_intensityMin = vec4.fromValues(0, 0, 0, 0);
+    this.g_opacity = vec4.fromValues(0, 0, 0, 0);
+    this.g_emissive = [
+      vec4.fromValues(0, 0, 0, 0),
+      vec4.fromValues(0, 0, 0, 0),
+      vec4.fromValues(0, 0, 0, 0),
+      vec4.fromValues(0, 0, 0, 0),
+    ];
+    this.g_diffuse = [
+      vec4.fromValues(0, 0, 0, 0),
+      vec4.fromValues(0, 0, 0, 0),
+      vec4.fromValues(0, 0, 0, 0),
+      vec4.fromValues(0, 0, 0, 0),
+    ];
+    this.g_specular = [
+      vec4.fromValues(0, 0, 0, 0),
+      vec4.fromValues(0, 0, 0, 0),
+      vec4.fromValues(0, 0, 0, 0),
+      vec4.fromValues(0, 0, 0, 0),
+    ];
+    this.g_roughness = vec4.fromValues(0, 0, 0, 0);
+  }
 
   sizeBytes(): number {
     return this.toBuffer().byteLength;
@@ -292,6 +367,12 @@ class ProgressiveBuffer {
   uFrameCounter: number;
   uSampleCounter: number;
   uResolution: vec2;
+  constructor() {
+    this.uFrameCounter = 0;
+    this.uSampleCounter = 0;
+    this.uResolution = vec2.fromValues(0, 0);
+  }
+
   sizeBytes(): number {
     return this.toBuffer().byteLength;
   }
@@ -307,6 +388,9 @@ class ProgressiveBuffer {
 
 class ExposureBuffer {
   exposure: number;
+  constructor() {
+    this.exposure = 0.75;
+  }
   sizeBytes(): number {
     return this.toBuffer().byteLength;
   }
@@ -384,7 +468,17 @@ function make_light(
   // lightdata["colorBottomIntensity"] = 1.0
 }
 
-class Renderer implements ISceneRenderer {
+export interface VolumeRendererSettings {
+  brightness: number;
+  density: number;
+  gammaMin: number;
+  gammaMax: number;
+  gammaScale: number;
+}
+
+class PTVolumeRenderer implements ISceneRenderer {
+  public settings: VolumeRendererSettings;
+
   device: GPUDevice;
   size: [number, number];
   volume: Volume;
@@ -426,13 +520,16 @@ class Renderer implements ISceneRenderer {
   exposureparams: ExposureBuffer;
   exposure_dirty: boolean;
 
-  constructor(
-    device: GPUDevice,
-    format: GPUTextureFormat,
-    size: [number, number]
-  ) {
+  constructor(device: GPUDevice) {
+    this.settings = {
+      brightness: 0.5,
+      density: 1.0,
+      gammaMax: 1.0,
+      gammaMin: 0.0,
+      gammaScale: 0.5,
+    };
     this.device = device;
-    this.size = size;
+    this.size = [0, 0];
     this.volume = undefined;
 
     // the quad geometry for drawing render passes
@@ -555,8 +652,6 @@ class Renderer implements ISceneRenderer {
     this.lut_textures_view = this.lut_textures.createView({
       label: "lut texture view 4ch",
     });
-
-    this.do_resize(size[0], size[1]);
   }
 
   async initPostCtor(): Promise<void> {
@@ -571,6 +666,8 @@ class Renderer implements ISceneRenderer {
     this.pathtrace_shader = new VolumeShader();
     await this.pathtrace_shader.load(this.device);
     this.path_trace_pipeline = this.setupvolpipeline();
+
+    this.check_resize([2, 2]);
   }
 
   exposure_from_slider(e: number): number {
@@ -901,28 +998,23 @@ class Renderer implements ISceneRenderer {
     scene: Scene,
     simulationTime: number
   ): void {
+    if (scene.volumes.length > 0 && !this.volume) {
+      this.add_volume(scene.volumes[0].volume);
+    }
     const renderTarget = target as CanvasRenderTarget;
     const commandEncoder = this.device.createCommandEncoder();
 
-    // render(
-    //     self,
-    //     device,
-    //     command_encoder: wgpu.GPUCommandEncoder,
-    //     target_view: wgpu.GPUTextureView,
-    //     camera,
-    //     scene,
-    // ):
     // if target_view's size changed since last time, then resize the backing buffers here.
     this.check_resize([target.getWidth(), target.getHeight()]);
 
     this.combine_volume_channels(scene);
     this.update_luts(scene, commandEncoder);
+    this.update_camera(this.device, camera, scene);
 
     // update dirty uniformbuffers
     if (this.camera_dirty) {
       this.compositedata.uFrameCounter = 0;
       this.compositedata.uSampleCounter = 0;
-      this.camera_dirty = false;
     } else {
       this.compositedata.uFrameCounter = this.compositedata.uFrameCounter + 1;
       this.compositedata.uSampleCounter = this.compositedata.uSampleCounter + 1;
@@ -1104,19 +1196,17 @@ class Renderer implements ISceneRenderer {
     // TODO DO THIS ONLY IF ENABLED CHANNELS CHANGED
     // TODO this is cpu->gpu memory move.  could be done entirely on GPU?
 
+    // TODO for each volume
+    const channel_state = scene.volumes[0].channel_state;
+
     const sx = this.volume.getDims()[2];
     const sy = this.volume.getDims()[1];
     const sz = this.volume.getDims()[0];
 
     const data = new Uint8Array(sz * sy * sx * 4).fill(0);
-    const channel_state = [
-      { enabled: true },
-      { enabled: true },
-      { enabled: true },
-      { enabled: false },
-    ];
 
     // use first 4 enabled channels
+    // TODO parallelize maybe?  chunk by the sx*sy*sz loop and invert
     let i = 0;
     for (let ch = 0; ch < channel_state.length; ++ch) {
       if (i >= 4) {
@@ -1144,3 +1234,5 @@ class Renderer implements ISceneRenderer {
     );
   }
 }
+
+export { PTVolumeRenderer };

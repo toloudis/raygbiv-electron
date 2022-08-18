@@ -17,17 +17,17 @@ fn main_vs(
     return out;
 }
 
-let PI:f32 = 3.1415926535897932384626433832795;
-let PI_OVER_2:f32 = 1.57079632679489661923;
-let PI_OVER_4:f32 = 0.785398163397448309616;
+const PI:f32 = 3.1415926535897932384626433832795;
+const PI_OVER_2:f32 = 1.57079632679489661923;
+const PI_OVER_4:f32 = 0.785398163397448309616;
 //let INV_PI = 1.0 / PI;
 //let INV_2_PI = 0.5 / PI;
 //let INV_4_PI = 0.25 / PI;
 
-let BLACK = vec3<f32>(0.0, 0.0, 0.0);
-let WHITE = vec3<f32>(1.0, 1.0, 1.0);
-let ShaderType_Brdf:i32 = 0;
-let ShaderType_Phase:i32 = 1;
+const BLACK = vec3<f32>(0.0, 0.0, 0.0);
+const WHITE = vec3<f32>(1.0, 1.0, 1.0);
+const ShaderType_Brdf:i32 = 0;
+const ShaderType_Phase:i32 = 1;
 
 struct Camera {
    m_from: vec3<f32>,
@@ -79,7 +79,7 @@ struct Light {
   m_colorBottom: vec3<f32>,
   //pad8: f32;
 };
-let NUM_LIGHTS:i32 = 2;
+const NUM_LIGHTS:i32 = 2;
 struct Lights {
   lights: array<Light,NUM_LIGHTS>
 };
@@ -323,7 +323,7 @@ fn PtoVolumeTex(p: vec3<f32>) -> vec3<f32> {
   // return p * gParams.gInvAaBbSize;
 }
 
-let UINT16_MAX:f32 = 1.0;//65535.0;
+const UINT16_MAX:f32 = 1.0;//65535.0;
 fn GetNormalizedIntensityMax4ch(P: vec3<f32>, ch: ptr<function, i32>) -> f32 {
     var intensity:vec4<f32> = UINT16_MAX * textureSampleLevel(volumeTexture, volumeTextureSampler, PtoVolumeTex(P), 0.0);
 
@@ -604,7 +604,7 @@ fn SphericalDirection(SinTheta: f32, CosTheta: f32, Phi: f32) -> vec3<f32> {
     return vec3<f32>(SinTheta * cos(Phi), SinTheta * sin(Phi), CosTheta);
 }
 
-fn Blinn_SampleF(shader: CVolumeShader, Wo: vec3<f32>, Wi: ptr<function, vec3<f32> >, Pdf: ptr<function, f32>, U: vec2<f32>) -> void {
+fn Blinn_SampleF(shader: CVolumeShader, Wo: vec3<f32>, Wi: ptr<function, vec3<f32> >, Pdf: ptr<function, f32>, U: vec2<f32>) {
   // Compute sampled half-angle vector wh for Blinn distribution
     let costheta = pow(U.x, 1.0 / (shader.m_Exponent + 1.0));
     let sintheta = sqrt(max(0.0, 1.0 - costheta * costheta));

@@ -14,7 +14,7 @@ class TonemapShader extends Shader {
 
     await this.loadModules();
 
-    this.createBindGroupLayouts(device);
+    this.bindGroupLayouts = this.createBindGroupLayouts(device);
     this.pipelineLayout = device.createPipelineLayout({
       bindGroupLayouts: this.bindGroupLayouts,
     });

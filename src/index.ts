@@ -7,6 +7,7 @@ import CameraController from "./renderer/cameraController";
 import Scene from "./renderer/scene";
 import { VolumeMaker } from "./renderer/geometries";
 import SimpleVolumeRenderer from "./renderer/simpleVolumeRenderer";
+import { PTVolumeRenderer } from "./renderer/ptVolumeRenderer";
 
 const camera = new Camera();
 const scene = new Scene();
@@ -101,49 +102,34 @@ graphics
 
     // set up scene renderer
 
-    const sceneRenderer = await graphics.createSimpleVolumeRenderer();
+    //const sceneRenderer = await graphics.createSimpleVolumeRenderer();
+    const sceneRenderer = await graphics.createPTVolumeRenderer();
     //const sceneRenderer = await graphics.createDefaultRenderer();
-    pane.addInput(
-      (sceneRenderer as SimpleVolumeRenderer).settings,
-      "brightness",
-      {
-        min: 0,
-        max: 2,
-        step: 0.01,
-      }
-    );
-    pane.addInput((sceneRenderer as SimpleVolumeRenderer).settings, "density", {
+    pane.addInput((sceneRenderer as PTVolumeRenderer).settings, "brightness", {
+      min: 0,
+      max: 2,
+      step: 0.01,
+    });
+    pane.addInput((sceneRenderer as PTVolumeRenderer).settings, "density", {
       min: 0,
       max: 1,
       step: 0.01,
     });
-    pane.addInput(
-      (sceneRenderer as SimpleVolumeRenderer).settings,
-      "gammaMin",
-      {
-        min: 0,
-        max: 1,
-        step: 0.01,
-      }
-    );
-    pane.addInput(
-      (sceneRenderer as SimpleVolumeRenderer).settings,
-      "gammaScale",
-      {
-        min: 0,
-        max: 1,
-        step: 0.01,
-      }
-    );
-    pane.addInput(
-      (sceneRenderer as SimpleVolumeRenderer).settings,
-      "gammaMax",
-      {
-        min: 0,
-        max: 1,
-        step: 0.01,
-      }
-    );
+    pane.addInput((sceneRenderer as PTVolumeRenderer).settings, "gammaMin", {
+      min: 0,
+      max: 1,
+      step: 0.01,
+    });
+    pane.addInput((sceneRenderer as PTVolumeRenderer).settings, "gammaScale", {
+      min: 0,
+      max: 1,
+      step: 0.01,
+    });
+    pane.addInput((sceneRenderer as PTVolumeRenderer).settings, "gammaMax", {
+      min: 0,
+      max: 1,
+      step: 0.01,
+    });
 
     // infinite render loop.
 
