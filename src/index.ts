@@ -53,9 +53,25 @@ graphics
     );
 
     //const voldata = VolumeMaker.createSphere(256, 256, 256, 64);
-    const voldata = VolumeMaker.createTorus(256, 256, 256, 24, 16);
+    //const volDims = [128, 128, 128];
+    const volDims = [256, 256, 256];
+    const voldata = VolumeMaker.createTorus(
+      volDims[0],
+      volDims[1],
+      volDims[2],
+      24,
+      16
+    );
     //const voldata = VolumeMaker.createVolume(256, 256, 256, (x, y, z) => -1);
-    const myVol = graphics.createVolume(voldata, 256, 256, 256, 1.0, 1.0, 1.0);
+    const myVol = graphics.createVolume(
+      voldata,
+      volDims[0],
+      volDims[1],
+      volDims[2],
+      1.0,
+      1.0,
+      1.0
+    );
     await myVol.prepare_fuse();
     myVol.setup_channel_luts();
 

@@ -5,6 +5,7 @@ import * as prefuse_wgsl from "./shaders/clearfuse.wgsl";
 
 class PreFuseShader extends Shader {
   computePipeline: GPUComputePipeline;
+  workgroupSize: [number, number, number] = [8, 8, 1];
 
   constructor() {
     super(prefuse_wgsl as unknown as string);

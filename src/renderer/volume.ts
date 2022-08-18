@@ -428,12 +428,12 @@ export class Volume {
     });
 
     const pingpongBindings0: GPUBindGroupEntry[] = [
-      { binding: 0, resource: this.fused_texture_view },
-      { binding: 1, resource: this.fused_texture_temp_view },
+      { binding: 0, resource: this.fused_texture_view }, // dest (output)
+      { binding: 1, resource: this.fused_texture_temp_view }, // accum
     ];
     const pingpongBindings1: GPUBindGroupEntry[] = [
-      { binding: 0, resource: this.fused_texture_temp_view },
-      { binding: 1, resource: this.fused_texture_view },
+      { binding: 0, resource: this.fused_texture_temp_view }, // dest (output)
+      { binding: 1, resource: this.fused_texture_view }, // accum
     ];
     const bind_group0 = this.device.createBindGroup({
       //label: `fuse bind group0 ${i} for channel ${fusechannels[i]}`,
@@ -560,6 +560,8 @@ export class Volume {
     command_encoder: GPUCommandEncoder,
     channel_state: ChannelState[]
   ): GPUTextureView {
+    // TODO don't run this code if fuse is not needed
+
     const nz = this.pixel_dims[0];
     const ny = this.pixel_dims[1];
     const nx = this.pixel_dims[2];
@@ -571,28 +573,33 @@ export class Volume {
       }
     }
 
-    // generate the necessary bind groups for this fuse.
-
     const compute_pass = command_encoder.beginComputePass();
 
     // 1. clear
     compute_pass.setPipeline(this.prefuse_compute_pipeline);
     compute_pass.setBindGroup(0, this.clearbind_group);
-    compute_pass.dispatchWorkgroups(nx, ny, nz);
+    compute_pass.dispatchWorkgroups(
+      nx / this.clearfuseshader.workgroupSize[0],
+      ny / this.clearfuseshader.workgroupSize[1],
+      nz / this.clearfuseshader.workgroupSize[2]
+    );
 
     // 2. fuse all channels in fusechannels
     compute_pass.setPipeline(this.fuse_compute_pipeline);
     for (let i = 0; i < fusechannels.length; ++i) {
       compute_pass.setBindGroup(0, this.pingpongBindGroups[i % 2]);
       compute_pass.setBindGroup(1, this.fuseChannelBindGroups[fusechannels[i]]);
-      compute_pass.dispatchWorkgroups(nx, ny, nz);
+      compute_pass.dispatchWorkgroups(
+        nx / this.fuseshader.workgroupSize[0],
+        ny / this.fuseshader.workgroupSize[1],
+        nz / this.fuseshader.workgroupSize[2]
+      );
     }
     compute_pass.end();
 
     // return target of last draw
     // see bind groups above
-    // TODO confirm this is correct
-    if (fusechannels.length % 2 == 0) {
+    if (fusechannels.length % 2 == 1) {
       return this.fused_texture_view;
     } else {
       return this.fused_texture_temp_view;

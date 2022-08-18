@@ -12,7 +12,8 @@ struct FuseLUT {
 // should be texture+sampler?
 @group(1) @binding(1) var<uniform> lut: FuseLUT;
 
-@compute @workgroup_size(1, 1, 1)
+// what is max workgroup_size???
+@compute @workgroup_size(8, 8, 1)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
     // load from channel
     let intensity : f32 = textureLoad(src, vec3<i32>(global_id.xyz), 0).r;

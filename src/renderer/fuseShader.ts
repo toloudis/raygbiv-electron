@@ -5,6 +5,7 @@ import * as fuse_wgsl from "./shaders/fuse.wgsl";
 
 class FuseShader extends Shader {
   computePipeline: GPUComputePipeline;
+  workgroupSize: [number, number, number] = [8, 8, 1];
 
   constructor() {
     super(fuse_wgsl as unknown as string);
