@@ -38,8 +38,19 @@ class SceneVolume implements SceneObject {
     this.transform = transform;
 
     this.channel_state = [];
+    const defcolors: [number, number, number][] = [
+      [0, 1, 1],
+      [1, 0, 1],
+      [1, 1, 0],
+      [1, 1, 1],
+      [0, 1, 0],
+      [1, 0, 0],
+      [0, 0, 1],
+    ];
     for (let i = 0; i < this.volume.channels.length; i++) {
-      this.channel_state.push(new ChannelState(i < 3, [1, 1, 1], 0, 255));
+      this.channel_state.push(
+        new ChannelState(i < 3, defcolors[i % defcolors.length], 0, 255)
+      );
     }
   }
 

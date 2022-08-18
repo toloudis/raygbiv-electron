@@ -50,7 +50,7 @@ interface IGraphics {
   ): Mesh;
 
   createVolume(
-    volumedata: Uint8Array,
+    volumedata: Uint8Array[],
     x: number,
     y: number,
     z: number,

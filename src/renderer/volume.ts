@@ -466,13 +466,17 @@ export class Volume {
     for (let i = 0; i < this.channels.length; ++i) {
       const random_color = colors[i % colors.length]; // list(np.random.choice(range(255), size=4) / 255.0)
       random_color[3] = 1.0;
-      const lut = this.channels[i].histogram.lutGenerator_percentiles(50, 98);
+      const lut = this.channels[i].histogram.lutGenerator_minMax(0.1, 0.9);
+      //      const lut = this.channels[i].histogram.lutGenerator_percentiles(50, 98);
+
       const clut = lut.lut;
 
       const clut_f = new Float32Array(clut.length);
       for (let j = 0; j < clut.length; ++j) {
-        clut_f[j] = clut[j];
+        clut_f[j] = clut[j] / 255.0;
       }
+
+      // fill buffer with floats
       const buf = createGPUBuffer(
         clut_f,
         GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
@@ -483,10 +487,10 @@ export class Volume {
       const texture = this.device.createTexture({
         label: "lut texture",
         size: [256, 1, 1],
-        format: "rgba32float", // lut is uint8!! FIXME TODO FIX
-        //        format: "rgba32float", // lut is uint8!! FIXME TODO FIX
+        format: "rgba32float",
         usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.TEXTURE_BINDING,
       });
+      // fill texture with floats
       this.device.queue.writeTexture(
         { texture: texture, origin: [0, 0, 0], mipLevel: 0 },
         clut_f,

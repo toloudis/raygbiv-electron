@@ -25,6 +25,12 @@ class Graphics implements IGraphics {
       console.log("ADAPTER FEATURES :  ");
 
       this.adapter.features.forEach((ext) => console.log("    " + ext));
+      console.log("ADAPTER LIMITS :  ");
+      console.log(this.adapter.limits);
+      console.log("DEVICE FEATURES :  ");
+      this.device.features.forEach((ext) => console.log("    " + ext));
+      console.log("DEVICE LIMITS :  ");
+      console.log(this.device.limits);
     } catch (e) {
       console.error(e);
       this.initFallback();
@@ -60,7 +66,7 @@ class Graphics implements IGraphics {
   }
 
   createVolume(
-    volumedata: Uint8Array,
+    volumedata: Uint8Array[],
     x: number,
     y: number,
     z: number,
@@ -69,8 +75,10 @@ class Graphics implements IGraphics {
     pz: number
   ): Volume {
     const volume = new Volume([pz, py, px], [z, y, x], this.device);
-    const c = new VolumeData(volumedata, [z, y, x], this.device);
-    volume.channels.push(c);
+    for (let i = 0; i < volumedata.length; i++) {
+      const c = new VolumeData(volumedata[i], [z, y, x], this.device);
+      volume.channels.push(c);
+    }
 
     return volume;
   }

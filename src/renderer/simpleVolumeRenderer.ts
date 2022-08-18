@@ -187,7 +187,7 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
       }
 
       // if fuse is needed:
-      object.volume.fuse_channels_gpu(
+      const fusedTex: GPUTextureView = object.volume.fuse_channels_gpu(
         this.device,
         this.commandEncoder,
         object.channel_state
@@ -303,7 +303,7 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
         const shaderuniformbindgroup = this.volumeShader.createShaderBindGroup(
           uniformBuffer,
           volSampler,
-          object.volume.getChannel(0).textureView,
+          fusedTex, //object.volume.getChannel(0).textureView,
           uniformBuffer2
         );
 

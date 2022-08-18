@@ -62,9 +62,16 @@ graphics
       24,
       16
     );
+    const voldata1 = VolumeMaker.createCone(
+      volDims[0],
+      volDims[1],
+      volDims[2],
+      24,
+      16
+    );
     //const voldata = VolumeMaker.createVolume(256, 256, 256, (x, y, z) => -1);
     const myVol = graphics.createVolume(
-      voldata,
+      [voldata, voldata1],
       volDims[0],
       volDims[1],
       volDims[2],
@@ -72,7 +79,11 @@ graphics
       1.0,
       1.0
     );
+    // TODO the async parts of this can move into renderer impl
     await myVol.prepare_fuse();
+    // TODO generation of per channel bind groups can be lazy in renderer perhaps?
+    // info about shader pipeline layout needs to be communicated btw volume and renderer
+    // any time new channel data comes in
     myVol.setup_channel_luts();
 
     const mOrigin = mat4.fromTranslation(
