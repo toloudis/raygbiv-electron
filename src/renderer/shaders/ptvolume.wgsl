@@ -30,16 +30,16 @@ const ShaderType_Brdf:i32 = 0;
 const ShaderType_Phase:i32 = 1;
 
 struct Camera {
-   m_from: vec3<f32>,
-   // pad 1
-   m_U: vec3<f32>,
-   // pad 1
-   m_V: vec3<f32>,
-   // pad 1
-   m_N: vec3<f32>,
-   // pad 1
-   m_screen: vec4<f32>,  // left, right, bottom, top
-   m_invScreen: vec2<f32>,  // 1/w, 1/h
+  m_from: vec3<f32>,
+  // pad 1
+  m_U: vec3<f32>,
+  // pad 1
+  m_V: vec3<f32>,
+  // pad 1
+  m_N: vec3<f32>,
+  // pad 1
+  m_screen: vec4<f32>,  // left, right, bottom, top
+  m_invScreen: vec2<f32>,  // 1/w, 1/h
   m_focalDistance: f32,
   m_apertureSize: f32,
   m_isPerspective: f32,
@@ -79,45 +79,46 @@ struct Light {
   m_colorBottom: vec3<f32>,
   //pad8: f32;
 };
+
 const NUM_LIGHTS:i32 = 2;
 struct Lights {
-  lights: array<Light,NUM_LIGHTS>
+  lights: array<Light,2>
 };
 
 struct GlobalParams {
     gClippedAaBbMin: vec3<f32>,
     // pad 1
     gClippedAaBbMax: vec3<f32>,
-     gDensityScale: f32,
-     gStepSize: f32,
-     gStepSizeShadow: f32,
-     // pad 2
-     gInvAaBbSize: vec3<f32>,
-     g_nChannels: i32,
+    gDensityScale: f32,
+    gStepSize: f32,
+    gStepSizeShadow: f32,
+    // pad 2
+    gInvAaBbSize: vec3<f32>,
+    g_nChannels: i32,
 
-     gShadingType: i32,
-     // pad 3
-     gGradientDeltaX: vec3<f32>,
-     // pad 1
-     gGradientDeltaY: vec3<f32>,
-     // pad 1
-     gGradientDeltaZ: vec3<f32>,
-     gInvGradientDelta: f32,
-     gGradientFactor: f32,
-     uShowLights: f32,
-     // pad 2
+    gShadingType: i32,
+    // pad 3
+    gGradientDeltaX: vec3<f32>,
+    // pad 1
+    gGradientDeltaY: vec3<f32>,
+    // pad 1
+    gGradientDeltaZ: vec3<f32>,
+    gInvGradientDelta: f32,
+    gGradientFactor: f32,
+    uShowLights: f32,
+    // pad 2
 };
 
 // per channel
 // SOA or AOS?
 struct Channels {
-     g_intensityMax: vec4<f32>,
-     g_intensityMin: vec4<f32>,
-     g_opacity: array<f32, 4>,
-     g_emissive: array<vec4<f32>, 4>,
-     g_diffuse: array<vec4<f32>, 4>,
-     g_specular: array<vec4<f32>, 4>,
-     g_roughness: array<f32, 4>,
+    g_intensityMax: vec4<f32>,
+    g_intensityMin: vec4<f32>,
+    g_opacity: vec4<f32>,//array<f32, 4>,
+    g_emissive: array<vec4<f32>, 4>,
+    g_diffuse: array<vec4<f32>, 4>,
+    g_specular: array<vec4<f32>, 4>,
+    g_roughness: vec4<f32>,//array<f32, 4>,
 };
 
 // compositing / progressive render
@@ -203,11 +204,11 @@ fn SameHemisphere(Ww1: vec3<f32>, Ww2: vec3<f32>) -> bool {
 fn getConcentricDiskSample(U: vec2<f32>) -> vec2<f32> {
     var r:f32;
     var theta:f32;
-  // Map uniform random numbers to [-1,1]^2
+    // Map uniform random numbers to [-1,1]^2
     let sx = 2.0 * U.x - 1.0;
     let sy = 2.0 * U.y - 1.0;
-  // Map square to (r,theta)
-  // Handle degeneracy at the origin
+    // Map square to (r,theta)
+    // Handle degeneracy at the origin
 
     if (sx == 0.0 && sy == 0.0) {
         return vec2<f32>(0.0, 0.0);
@@ -215,7 +216,7 @@ fn getConcentricDiskSample(U: vec2<f32>) -> vec2<f32> {
 
     if (sx >= -sy) {
         if (sx > sy) {
-      // Handle first region of disk
+            // Handle first region of disk
             r = sx;
             if (sy > 0.0) {
                 theta = sy / r;
@@ -223,17 +224,17 @@ fn getConcentricDiskSample(U: vec2<f32>) -> vec2<f32> {
                 theta = 8.0 + sy / r;
             }
         } else {
-      // Handle second region of disk
+            // Handle second region of disk
             r = sy;
             theta = 2.0 - sx / r;
         }
     } else {
         if (sx <= sy) {
-      // Handle third region of disk
+            // Handle third region of disk
             r = -sx;
             theta = 4.0 - sy / r;
         } else {
-      // Handle fourth region of disk
+            // Handle fourth region of disk
             r = -sy;
             theta = 6.0 + sx / r;
         }
@@ -279,8 +280,8 @@ fn GenerateCameraRay(cam: Camera, Pixel: vec2<f32>, ApertureRnd: vec2<f32>) -> R
     if (cam.m_isPerspective == 0.0) {
         RayO = RayO + (ScreenPoint.x * cam.m_U) + (ScreenPoint.y * cam.m_V);
     }
-  // negating ScreenPoint.y flips the up/down direction. depends on whether you want pixel 0 at top or bottom
-  // we could also have flipped m_screen and m_invScreen, or cam.m_V?
+    // negating ScreenPoint.y flips the up/down direction. depends on whether you want pixel 0 at top or bottom
+    // we could also have flipped m_screen and m_invScreen, or cam.m_V?
     var RayD:vec3<f32> = normalize(cam.m_N + (ScreenPoint.x * cam.m_U) + (ScreenPoint.y * cam.m_V));
     if (cam.m_isPerspective == 0.0) {
         RayD = cam.m_N;
@@ -330,7 +331,7 @@ fn GetNormalizedIntensityMax4ch(P: vec3<f32>, ch: ptr<function, i32>) -> f32 {
     var maxIn = 0.0;
     *ch = 0;
 
-  //let a = intensity.x;
+    //let a = intensity.x;
 
     intensity = (intensity - gChannels.g_intensityMin) / (gChannels.g_intensityMax - gChannels.g_intensityMin);
     intensity.x = textureSampleLevel(g_lutTexture, lutSampler, vec2<f32>(intensity.x, 0.125), 0.0).w;
@@ -344,7 +345,7 @@ fn GetNormalizedIntensityMax4ch(P: vec3<f32>, ch: ptr<function, i32>) -> f32 {
             *ch = i;
         }
     }
-  //return a;
+    //return a;
     return maxIn; // *factor;
 }
 
@@ -357,7 +358,7 @@ fn GetNormalizedIntensity(P: vec3<f32>, ch: i32) -> f32 {
 
 fn GetNormalizedIntensity4ch(P: vec3<f32>, ch: i32) -> f32 {
     let intensity = UINT16_MAX * textureSampleLevel(volumeTexture, volumeTextureSampler, PtoVolumeTex(P), 0.0);
-  // select channel
+    // select channel
     var intensityf:f32 = intensity[ch];
     intensityf = (intensityf - gChannels.g_intensityMin[ch]) / (gChannels.g_intensityMax[ch] - gChannels.g_intensityMin[ch]);
   //intensityf = texture(g_lutTexture[ch], vec2<f32>(intensityf, 0.5)).w;
