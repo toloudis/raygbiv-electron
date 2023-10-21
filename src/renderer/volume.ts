@@ -4,7 +4,7 @@ import { createGPUBuffer } from "./bufferUtil";
 import { createCube } from "./geometries";
 import { PreFuseShader } from "./preFuseShader";
 import { FuseShader } from "./fuseShader";
-import Histogram from "./Histogram";
+import Histogram from "./histogram";
 
 export class ChannelState {
   rgb: [number, number, number];

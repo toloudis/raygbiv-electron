@@ -7,7 +7,7 @@ import {
 } from "./bufferUtil";
 import { createQuad } from "./geometries";
 import { VolumeShader } from "./ptVolumeShader";
-import { TonemapShader } from "./toneMapShader";
+import { TonemapShader } from "./tonemapShader";
 import { PreFuseShader } from "./preFuseShader";
 import { FuseShader } from "./fuseShader";
 import { Volume } from "./volume";
