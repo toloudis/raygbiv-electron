@@ -48,7 +48,7 @@ var<uniform> uniforms: Uniforms;
 fn main_vs(
     in: VertexInput
 ) -> VertexOutput {
-    var out:VertexOutput;
+    var out: VertexOutput;
     out.pObj = in.position;
     out.clip_position = uniforms.projectionMatrix * uniforms.modelViewMatrix * vec4<f32>(in.position, 1.0);
     return out;
@@ -78,11 +78,11 @@ fn luma2Alpha(color: ptr<function, vec4<f32>>, vmin: f32, vmax: f32, C: f32) -> 
 
 fn sampleAs3DTexture(pos: vec4<f32>) -> vec4<f32> {
     var bounds = 0.0;
-    if ((pos.x >= 0.0) && (pos.x <= 1.0) && (pos.y >= 0.0) && (pos.y <= 1.0) && (pos.z >= 0.0) && (pos.z <= 1.0)) {
+    if (pos.x >= 0.0) && (pos.x <= 1.0) && (pos.y >= 0.0) && (pos.y <= 1.0) && (pos.z >= 0.0) && (pos.z <= 1.0) {
         bounds = 1.0;
     }
 
-    let texval:vec4<f32> = textureSampleLevel(textureAtlas, textureSampler, pos.xyz, 0.0);
+    let texval: vec4<f32> = textureSampleLevel(textureAtlas, textureSampler, pos.xyz, 0.0);
     let retval = vec4<f32>(texval.rgb, 1.0);
 //   vec4 maskval =
 //       vec4(textureLod(sampler3D(textureAtlasMask, textureSampler), pos.xyz, 0).r);
@@ -124,28 +124,28 @@ fn accumulate(col: vec4<f32>, s: f32, C: vec4<f32>) -> vec4<f32> {
 
 fn accumulateMax(col: vec4<f32>, s: f32, C: vec4<f32>) -> vec4<f32> {
     var retval: vec4<f32> = C;
-    if (col.x * col.w > C.x) { retval.x = col.x * col.w; }
-    if (col.y * col.w > C.y) { retval.y = col.y * col.w; }
-    if (col.z * col.w > C.z) { retval.z = col.z * col.w; }
-    if (col.w > C.w) { retval.w = col.w; }
+    if col.x * col.w > C.x { retval.x = col.x * col.w; }
+    if col.y * col.w > C.y { retval.y = col.y * col.w; }
+    if col.z * col.w > C.z { retval.z = col.z * col.w; }
+    if col.w > C.w { retval.w = col.w; }
     return retval;
 }
 
-fn integrateVolume(eye_o: vec4<f32>, eye_d: vec4< f32>, tnear: f32, tfar: f32, clipNear: f32, clipFar: f32, fragcoord: vec4<f32>) -> vec4<f32> {
+fn integrateVolume(eye_o: vec4<f32>, eye_d: vec4<f32>, tnear: f32, tfar: f32, clipNear: f32, clipFar: f32, fragcoord: vec4<f32>) -> vec4<f32> {
     var C = vec4<f32>(0.0); // background color????
     let tend = tfar;
     let tbegin = tnear;
     let maxSteps = 128;//512?
     let scaledSteps = f32(fraguniforms.BREAK_STEPS) * length((eye_d.xyz / fraguniforms.volumeScale));
-    let csteps = clamp(f32(scaledSteps), 1.0, f32(maxSteps));
+    let csteps = clamp(scaledSteps, 1.0, f32(maxSteps));
     let invstep = (tfar - tnear) / csteps;
 
     var r = 0.0;
-    if (fraguniforms.SLICES != 1.0) {
+    if fraguniforms.SLICES != 1.0 {
         r = 0.5 - 1.0 * rand(eye_d.xy, fragcoord);
     }
 
-    let tstep:f32 = invstep * fraguniforms.orthoThickness;
+    let tstep: f32 = invstep * fraguniforms.orthoThickness;
     let tfarsurf = r * tstep;
   // mod(tfarsurf-tend, tstep)
     let overflow = tfarsurf - tend - tstep * floor((tfarsurf - tend) / tstep);
@@ -154,8 +154,8 @@ fn integrateVolume(eye_o: vec4<f32>, eye_d: vec4< f32>, tnear: f32, tfar: f32, c
     var tdist = 0.0;
     var numSteps = 0;
 
-    var pos:vec4<f32>;
-    var col:vec4<f32>;
+    var pos: vec4<f32>;
+    var col: vec4<f32>;
     let s = 0.5 * f32(maxSteps) / csteps;
     for (var i = 0; i < maxSteps; i = i + 1) {
         pos = eye_o + eye_d * t;
@@ -164,7 +164,7 @@ fn integrateVolume(eye_o: vec4<f32>, eye_d: vec4< f32>, tnear: f32, tfar: f32, c
         col = sampleStack(pos);
 
         col = vec4<f32>(col.xyz * fraguniforms.BRIGHTNESS, col.w);
-        if (fraguniforms.maxProject != 0) {
+        if fraguniforms.maxProject != 0 {
             C = accumulateMax(col, s, C);
         } else {
             col.w = col.w * fraguniforms.DENSITY;
@@ -172,10 +172,10 @@ fn integrateVolume(eye_o: vec4<f32>, eye_d: vec4< f32>, tnear: f32, tfar: f32, c
         }
         t = t + tstep;
         numSteps = i;
-        if (t > tend || t > tbegin + clipFar) {
+        if t > tend || t > tbegin + clipFar {
       break;
         }
-        if (C.w > 1.0) {
+        if C.w > 1.0 {
       break;
         }
     }
@@ -192,7 +192,7 @@ fn main_fs(
 
     var eyeRay_o: vec3<f32>;
     var eyeRay_d: vec3<f32>;
-    if (fraguniforms.isPerspective != 0.0) {
+    if fraguniforms.isPerspective != 0.0 {
     // put ray in object space (which is the 0-1 range of the cube coordinates)
     // transform view space 0,0,0 (the eye position) into model (object) space
         eyeRay_o = (fraguniforms.inverseModelViewMatrix * vec4<f32>(0.0, 0.0, 0.0, 1.0)).xyz;
@@ -213,10 +213,10 @@ fn main_fs(
 
     let boxMin = fraguniforms.AABB_CLIP_MIN;
     let boxMax = fraguniforms.AABB_CLIP_MAX;
-    var tnear:f32;
-    var tfar:f32;
-    let hit:bool = intersectBox(eyeRay_o, eyeRay_d, boxMin, boxMax, &tnear, &tfar);
-    if (!hit) {
+    var tnear: f32;
+    var tfar: f32;
+    let hit: bool = intersectBox(eyeRay_o, eyeRay_d, boxMin, boxMax, &tnear, &tfar);
+    if !hit {
         outputColour = vec4<f32>(0.0, 0.0, 0.0, 0.0);
         return outputColour;
     }
