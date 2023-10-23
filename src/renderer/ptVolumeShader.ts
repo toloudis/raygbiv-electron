@@ -69,26 +69,26 @@ class VolumeShader extends Shader {
         {
           binding: 5,
           visibility: GPUShaderStage.FRAGMENT,
-          sampler: { type: "filtering" as GPUSamplerBindingType },
+          sampler: { type: "non-filtering" as GPUSamplerBindingType },
         },
         {
           binding: 6,
           visibility: GPUShaderStage.FRAGMENT,
           texture: {
-            sampleType: "float" as GPUTextureSampleType,
+            sampleType: "unfilterable-float" as GPUTextureSampleType,
             viewDimension: "3d" as GPUTextureViewDimension,
           },
         },
         {
           binding: 7,
           visibility: GPUShaderStage.FRAGMENT,
-          sampler: { type: "filtering" as GPUSamplerBindingType },
+          sampler: { type: "non-filtering" as GPUSamplerBindingType },
         },
         {
           binding: 8,
           visibility: GPUShaderStage.FRAGMENT,
           texture: {
-            sampleType: "float" as GPUTextureSampleType,
+            sampleType: "unfilterable-float" as GPUTextureSampleType,
             viewDimension: "2d" as GPUTextureViewDimension,
           },
         },
@@ -98,7 +98,7 @@ class VolumeShader extends Shader {
           binding: 9,
           visibility: GPUShaderStage.FRAGMENT,
           texture: {
-            sampleType: "float" as GPUTextureSampleType,
+            sampleType: "unfilterable-float" as GPUTextureSampleType,
             viewDimension: "2d" as GPUTextureViewDimension,
           },
         },

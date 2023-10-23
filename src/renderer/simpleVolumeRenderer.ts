@@ -295,9 +295,9 @@ export default class SimpleVolumeRenderer implements ISceneRenderer {
           addressModeU: "clamp-to-edge",
           addressModeV: "clamp-to-edge",
           addressModeW: "clamp-to-edge",
-          magFilter: "linear",
-          minFilter: "linear",
-          mipmapFilter: "linear",
+          magFilter: "nearest", // TODO come back to linear
+          minFilter: "nearest",
+          mipmapFilter: "nearest",
         });
         // attach this buffer to the shader
         const shaderuniformbindgroup = this.volumeShader.createShaderBindGroup(

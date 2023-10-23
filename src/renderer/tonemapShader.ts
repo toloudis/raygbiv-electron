@@ -49,13 +49,13 @@ class TonemapShader extends Shader {
         {
           binding: 1,
           visibility: GPUShaderStage.FRAGMENT,
-          sampler: { type: "filtering" as GPUSamplerBindingType },
+          sampler: { type: "non-filtering" as GPUSamplerBindingType },
         },
         {
           binding: 2,
           visibility: GPUShaderStage.FRAGMENT,
           texture: {
-            sampleType: "float" as GPUTextureSampleType,
+            sampleType: "unfilterable-float" as GPUTextureSampleType,
             viewDimension: "2d" as GPUTextureViewDimension,
           },
         },

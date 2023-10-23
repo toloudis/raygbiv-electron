@@ -555,8 +555,8 @@ class PTVolumeRenderer implements ISceneRenderer {
       addressModeU: "clamp-to-edge",
       addressModeV: "clamp-to-edge",
       addressModeW: "clamp-to-edge",
-      magFilter: "linear",
-      minFilter: "linear",
+      magFilter: "nearest", // TODO come back to linear
+      minFilter: "nearest",
     });
 
     // we will sample per-pixel for composite purposes (TODO FIXME do we need a sampler if we just do texture loads???)
@@ -1137,10 +1137,14 @@ class PTVolumeRenderer implements ISceneRenderer {
     ];
     const volume = scene.volumes[0].volume;
     for (let ch in channel_state) {
+      console.log(ch);
       if (i >= 4) {
         break;
       }
       if (!channel_state[ch].enabled) {
+        continue;
+      }
+      if (!volume.luts[ch]) {
         continue;
       }
 
