@@ -1137,7 +1137,6 @@ class PTVolumeRenderer implements ISceneRenderer {
     ];
     const volume = scene.volumes[0].volume;
     for (let ch in channel_state) {
-      console.log(ch);
       if (i >= 4) {
         break;
       }
