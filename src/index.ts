@@ -102,8 +102,8 @@ graphics
 
     // set up scene renderer
 
-    //const sceneRenderer = await graphics.createSimpleVolumeRenderer();
-    const sceneRenderer = await graphics.createPTVolumeRenderer();
+    const sceneRenderer = await graphics.createSimpleVolumeRenderer();
+    //const sceneRenderer = await graphics.createPTVolumeRenderer();
     //const sceneRenderer = await graphics.createDefaultRenderer();
     pane.addBinding(
       (sceneRenderer as PTVolumeRenderer).settings,
